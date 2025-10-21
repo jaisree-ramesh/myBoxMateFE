@@ -33,8 +33,10 @@ export type NavigationItemProps = {
 };
 
 export interface ImageItem {
-  link: string;
-  image: string;
-  alt: string;
-  id?: string;
+  data: {
+    link?: string;
+    image: string;
+    alt: string;
+    id: number;
+  }[];
 }
