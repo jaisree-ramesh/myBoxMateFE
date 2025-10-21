@@ -1,11 +1,13 @@
 import { type ImageItem } from "../types";
 
-function ImageProps({ link, image, alt, id }: ImageItem) {
+function ImageProps({ data }: ImageItem) {
   return (
-    <section id={id}>
-      <a href={link} rel="noopener noreferrer">
-        <img src={image} alt={alt || ""} loading="lazy" />
-      </a>
+    <section>
+      {data.map((item) => (
+        <a href={item.link} rel="noopener noreferrer" key={item.id}>
+          <img src={item.image} alt={item.alt || ""} loading="lazy" />
+        </a>
+      ))}
     </section>
   );
 }
