@@ -30,10 +30,10 @@ ul
         list-style-type: none
     
 
-    a
-        text-decoration: none
-        color: variables.$text-color
-        text-transform: capitalize
+a
+    text-decoration: none
+    color: variables.$text-color
+    
 
 
 /* logo */
@@ -51,6 +51,7 @@ ul
         a
             display: inline-block
             padding: 0.5rem 1rem
+            text-transform: capitalize
 
             &:hover
                 color: variables.$headings-color
@@ -66,7 +67,7 @@ ul
         background: transparent
         border: 1px solid variables.$button-border-color
 
-.menu-link 
+.menu-link
     color: variables.$menu-link-color
     text-transform: uppercase
 
@@ -76,7 +77,7 @@ ul
     position: fixed
     top: 0
     right: 0
-    width: 50vw
+    width: 30vw
     height: 100%
     background-color: variables.$orange
     padding: 0
@@ -127,9 +128,36 @@ ul
         right: 2rem        
 
 /* header */
+
 .header-navigation
     @include mixins.flex-space-between-center
-    
+
+/* home */
+
+.home-main-container
+    @include mixins.flex-center
+    width: 100%
+    padding: 0 0 2rem 0
+
+    .home-text
+        padding: 0 0 0 4rem
+        white-space: pre-line
+
+    .home-image img
+        width: 50vw
+
+.button-container
+    .button-wrapper
+        @include mixins.flex-gap
+
+.button 
+    padding: 0.75rem 1.5rem
+    border-radius: 6px
+    text-decoration: none
+    display: inline-block
+    transition: all 0.3s ease
+    border: 2px solid variables.$button-border-color
+
 
 /* footer */
 
@@ -164,6 +192,30 @@ footer
 
 /* media queries */
 
+@media screen and ( min-width: variables.$breakpoint-xxl )
+    .home-main-container
+        .home-text
+            padding: 0 0 0 4rem
+
+@media screen and ( max-width: variables.$breakpoint-lg )
+    .navigation
+        padding: 1rem 2rem
+
+    .home-main-container
+        @include mixins.flex-column-center-reverse
+        text-align: center
+
+        .home-text
+            padding: 0 2rem 2rem 2rem
+
+        .home-image img
+            width: 70vw
+
+    .opened-menu
+        width: 40vw
+
+
+
 @media screen and ( max-width: variables.$breakpoint-md )
 
     footer
@@ -173,6 +225,7 @@ footer
 
             .navigation-item ul
                 @include mixins.flex-column-start
+                gap: 0
 
 @media screen and ( max-width: variables.$breakpoint-sm )
     .opened-menu
