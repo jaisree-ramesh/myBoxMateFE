@@ -1,6 +1,104 @@
 @use 'variables'
 @use 'mixins'
 
+* 
+    box-sizing: border-box
+
+
 html, body
-    background-color: black
-    color: white
+    background-color: variables.$background-color
+    font-family: variables.$font-family
+    overflow-x: hidden
+    margin: 0 auto
+    padding: 0
+
+h1, h2, h3, h4, h5, h6
+    color: variables.$headings-color
+    font-weight: variables.$headings-font-weight
+
+h1
+    font-size: variables.$h1-text-size
+
+p
+    color: variables.$text-color
+    font-size: variables.$paragraph-text-size
+
+ul 
+    padding-inline-start: 0
+
+    li 
+        list-style-type: none
+    
+
+    a
+        text-decoration: none
+        color: variables.$text-color
+
+/* logo */
+
+.logo-container
+    img
+        width: variables.$small-img
+
+/* navigation item */
+
+.navigation-item 
+    ul
+        @include mixins.flex-gap
+
+        a
+            display: inline-block
+            padding: 0.5rem 1rem
+
+            &:hover
+                color: variables.$headings-color
+
+.navigation
+    padding: 2rem 4rem
+
+.menu-item 
+    background: variables.$button-background-color
+    border-radius: 10px
+
+    &:hover
+        background: transparent
+        border: 1px solid variables.$button-border-color
+
+.menu-link 
+    color: variables.$menu-link-color
+    text-transform: uppercase
+
+    
+    
+
+/* header */
+.header-navigation
+    @include mixins.flex-space-between-center
+    
+
+/* footer */
+
+footer
+    width: inherit
+    position: relative
+    bottom: 0
+    bbox-shadow: 1px -3px 10px -5px rgba(57,29,7,1)
+    -webkit-box-shadow: 1px -3px 10px -5px rgba(57,29,7,1)
+    -moz-box-shadow: 1px -3px 10px -5px rgba(57,29,7,1)
+
+    .footer-navigation
+        @include mixins.flex-gap-center
+
+
+/* media queries */
+
+@media screen and ( max-width: variables.$breakpoint-md )
+
+    footer
+        .footer-navigation
+            @include mixins.flex-column-start
+            gap: 0.5rem
+
+            .navigation-item ul
+                @include mixins.flex-column-start
+
