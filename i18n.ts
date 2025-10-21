@@ -41,6 +41,22 @@ i18n
             { id: 0, name: "login", link: "/login" },
             { id: 1, name: "menu", link: "/" },
           ],
+          homeText: [
+            {
+              title: "My Box Mate:\n Organize. Track. Relax.",
+              text: "Never waste time searching again. My Box Mate is your ultimate solution for knowing exactly what you have and where it is, whether it's in a box in the attic or in your refrigerator.\n\n How does it work? Simple, fast, and smart.",
+              button: [
+                {
+                  text: "Let´s organize",
+                  link: "/organize",
+                },
+                {
+                  text: "Tutorial",
+                  link: "/tutorial",
+                },
+              ],
+            },
+          ],
         },
       },
       de: {
@@ -54,6 +70,24 @@ i18n
           headerNav: [
             { id: 0, name: "login", link: "/login" },
             { id: 1, name: "menu", link: "/" },
+          ],
+          homeText: [
+            {
+              title: "My Box Mate:\n Organisieren. Verfolgen. Entspannen.",
+              text: "Verschwenden Sie nie wieder Zeit mit Suchen. My Box Mate ist die ultimative Lösung, um genau zu wissen, was Sie haben und wo es sich befindet, egal ob in einer Kiste auf dem Dachboden oder in Ihrem Kühlschrank.\n\n Wie funktioniert es? Einfach, schnell und intelligent.",
+              button: [
+                {
+                  id: 0,
+                  text: "Lasst uns organisieren",
+                  link: "/organize",
+                },
+                {
+                  id: 1,
+                  text: "Tutorial",
+                  link: "/tutorial",
+                },
+              ],
+            },
           ],
         },
       },
