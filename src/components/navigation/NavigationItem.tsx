@@ -1,15 +1,9 @@
-import { useState } from "react";
+import { useToggle } from "../../hooks/useToggle";
 import type { NavItem, NavigationItemProps } from "../../types";
 import OpenedMenu from "./OpenedMenu";
 
 function NavigationItem({ data }: NavigationItemProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const handleMenuClick = (itemName: string) => {
-    if (itemName === "menu") {
-      setIsMenuOpen((prev) => !prev);
-    }
-  };
+  const { isOpen, toggle, close } = useToggle();
 
   return (
     <nav className="navigation-item" aria-label="Navigation links">
@@ -26,7 +20,7 @@ function NavigationItem({ data }: NavigationItemProps) {
               onClick={(e) => {
                 if (item.name === "menu") {
                   e.preventDefault();
-                  handleMenuClick(item.name);
+                  toggle();
                 }
               }}
             >
@@ -35,9 +29,8 @@ function NavigationItem({ data }: NavigationItemProps) {
           </li>
         ))}
       </ul>
-      {isMenuOpen && (
-        <OpenedMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-      )}
+
+      {isOpen && <OpenedMenu isOpen={isOpen} onClose={close} />}
     </nav>
   );
 }
