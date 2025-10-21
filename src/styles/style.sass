@@ -33,6 +33,8 @@ ul
     a
         text-decoration: none
         color: variables.$text-color
+        text-transform: capitalize
+
 
 /* logo */
 
@@ -54,7 +56,7 @@ ul
                 color: variables.$headings-color
 
 .navigation
-    padding: 2rem 4rem
+    padding: 1rem 4rem
 
 .menu-item 
     background: variables.$button-background-color
@@ -68,8 +70,61 @@ ul
     color: variables.$menu-link-color
     text-transform: uppercase
 
-    
-    
+/* opened menu */
+
+.opened-menu
+    position: fixed
+    top: 0
+    right: 0
+    width: 50vw
+    height: 100%
+    background-color: variables.$orange
+    padding: 0
+    transform: translateX(100%) 
+    transition: transform 0.3s ease-in-out
+    z-index: 2
+    border-radius: 40px 0 0 40px
+
+    .opened-menu-logo 
+        img
+            width: 10rem
+            position: absolute
+            z-index: 3
+            top: -0.1rem
+
+    .close-menu 
+        img
+            position: absolute
+            right: 2rem
+            top: 2rem
+
+    &.open
+        transform: translateX(0)
+
+    .navigation-item
+        padding: 0
+
+        ul
+            @include mixins.flex-column-start
+            height: inherit
+            margin-top: 5rem
+
+    a
+        width: 100%
+        color: variables.$menu-link-color
+        text-transform: uppercase
+        font-weight: 900
+        text-align: left
+        font-size: variables.$menu-link-size
+
+    .opened-menu-wrapper
+        border-top: 1px solid variables.$menu-link-color
+        border-bottom: 1px solid variables.$menu-link-color
+        position: absolute
+        top: 4rem
+        bottom: 4rem
+        left: 2rem
+        right: 2rem        
 
 /* header */
 .header-navigation
@@ -90,6 +145,23 @@ footer
         @include mixins.flex-gap-center
 
 
+/* animations */
+
+.animate__slideInRight
+    -webkit-animation-name: slideInRight
+    animation-name: slideInRight
+
+.animate__slideOutRight
+    -webkit-animation-name: slideOutRight
+    animation-name: slideOutRight
+
+/* animated components */
+
+.opened-menu.open
+    animation: slideInRight
+    animation-duration: 2s
+
+
 /* media queries */
 
 @media screen and ( max-width: variables.$breakpoint-md )
@@ -101,4 +173,9 @@ footer
 
             .navigation-item ul
                 @include mixins.flex-column-start
+
+@media screen and ( max-width: variables.$breakpoint-sm )
+    .opened-menu
+        width: 80vw
+        
 
