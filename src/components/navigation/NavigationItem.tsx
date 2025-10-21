@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { NavItem, NavigationItemProps } from "../../types";
-import FooterNavigation from "./FooterNavigation";
+import OpenedMenu from "./OpenedMenu";
 
 function NavigationItem({ data }: NavigationItemProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,7 +26,7 @@ function NavigationItem({ data }: NavigationItemProps) {
               onClick={(e) => {
                 if (item.name === "menu") {
                   e.preventDefault();
-                  handleMenuClick(item.name)
+                  handleMenuClick(item.name);
                 }
               }}
             >
@@ -36,7 +36,7 @@ function NavigationItem({ data }: NavigationItemProps) {
         ))}
       </ul>
       {isMenuOpen && (
-        <FooterNavigation />
+        <OpenedMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       )}
     </nav>
   );
