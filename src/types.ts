@@ -40,3 +40,32 @@ export interface ImageItem {
     id: number;
   }[];
 }
+
+export interface TextTypesProps {
+  title: string;
+  text: string;
+}
+
+export type TextProps = {
+  data: TextTypesProps[];
+};
+
+export interface ButtonItem {
+  text: string;
+  link: string;
+  id: number;
+  
+}
+
+export interface ButtonTypes {
+  id?: number;
+  title?: string;
+  text?: string;
+  button: ButtonItem[];
+  
+}
+
+export interface ButtonProps {
+  data: ButtonTypes[];
+}
+
