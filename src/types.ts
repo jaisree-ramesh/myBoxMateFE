@@ -54,18 +54,16 @@ export interface ButtonItem {
   text: string;
   link: string;
   id: number;
-  
 }
 
 export interface ButtonTypes {
   id?: number;
   title?: string;
   text?: string;
+  ariaLabel: string;
   button: ButtonItem[];
-  
 }
 
 export interface ButtonProps {
   data: ButtonTypes[];
 }
-
