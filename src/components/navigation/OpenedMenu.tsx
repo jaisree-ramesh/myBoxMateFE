@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import ImageProps from "../../props/ImageProps";
 import { closeMenu } from "../../data";
 import { myBoxOpenedMenu } from "../../data";
+import LanguageSwitcher from "../LanguageSwitcher";
 
 type OpenedMenuProps = {
   isOpen: boolean;
@@ -24,6 +25,7 @@ function OpenedMenu({ isOpen, onClose }: OpenedMenuProps) {
       </section>
 
       <section className="opened-menu-wrapper">
+        <LanguageSwitcher />
         <NavigationItem data={footerNavigation} />
       </section>
     </section>

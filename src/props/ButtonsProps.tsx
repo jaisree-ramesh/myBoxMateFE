@@ -9,6 +9,7 @@ function ButtonsProps({ data }: ButtonProps) {
             <a
               key={i}
               href={btn.link}
+              aria-label={item.ariaLabel}
               className={`button ${
                 btn.id === 0
                   ? "button-bg" // brown background

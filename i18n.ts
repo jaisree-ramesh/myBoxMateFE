@@ -47,12 +47,16 @@ i18n
               text: "Never waste time searching again. My Box Mate is your ultimate solution for knowing exactly what you have and where it is, whether it's in a box in the attic or in your refrigerator.\n\n How does it work? Simple, fast, and smart.",
               button: [
                 {
+                  id: 0,
                   text: "Let´s organize",
                   link: "/organize",
+                  ariaLabel: "Let´s organize link",
                 },
                 {
+                  id: 1,
                   text: "Tutorial",
                   link: "/tutorial",
+                  ariaLabel: "Tutorial link",
                 },
               ],
             },
@@ -80,11 +84,13 @@ i18n
                   id: 0,
                   text: "Lasst uns organisieren",
                   link: "/organize",
+                  ariaLabel: "Lasst uns organisieren link",
                 },
                 {
                   id: 1,
                   text: "Tutorial",
                   link: "/tutorial",
+                  ariaLabel: "Tutorial link",
                 },
               ],
             },
