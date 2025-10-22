@@ -28,13 +28,14 @@ ul
 
     li 
         list-style-type: none
-    
 
 a
     text-decoration: none
     color: variables.$text-color
-    
 
+a, button
+    cursor: pointer
+    border: none
 
 /* logo */
 
@@ -88,10 +89,11 @@ a
 
     .opened-menu-logo 
         img
-            width: 10rem
+            width: 8rem
             position: absolute
             z-index: 3
-            top: -0.1rem
+            top: 0.5rem
+            left: 0.5rem
 
     .close-menu 
         img
@@ -125,7 +127,27 @@ a
         top: 4rem
         bottom: 4rem
         left: 2rem
-        right: 2rem        
+        right: 2rem  
+
+        .languages-wrapper // This class is in the LanguageSwitcher component
+            @include mixins.flex-end
+            padding-top: 1rem
+            gap: 1rem
+
+            .selected-language
+                background-color: variables.$dark-brown
+                border: 2px solid variables.$dark-brown
+
+            button
+                background-color: transparent
+                border: 2px solid variables.$menu-link-color
+                border-radius: 5px
+                padding: 0.5rem
+                color: variables.$menu-link-color
+
+                &:hover
+                    background-color: variables.$dark-brown
+                    border: 2px solid variables.$dark-brown
 
 /* header */
 
@@ -150,13 +172,17 @@ a
     .button-wrapper
         @include mixins.flex-gap
 
-.button 
-    padding: 0.75rem 1.5rem
-    border-radius: 6px
-    text-decoration: none
-    display: inline-block
-    transition: all 0.3s ease
-    border: 2px solid variables.$button-border-color
+    .button-bg
+        background-color: variables.$button-background-color
+        color: variables.$button-text-color
+
+    .button 
+        padding: 0.75rem 1.5rem
+        border-radius: 6px
+        text-decoration: none
+        display: inline-block
+        transition: all 0.3s ease
+        border: 2px solid variables.$button-border-color
 
 
 /* footer */
@@ -165,12 +191,13 @@ footer
     width: inherit
     position: relative
     bottom: 0
-    bbox-shadow: 1px -3px 10px -5px rgba(57,29,7,1)
+    box-shadow: 1px -3px 10px -5px rgba(57,29,7,1)
     -webkit-box-shadow: 1px -3px 10px -5px rgba(57,29,7,1)
     -moz-box-shadow: 1px -3px 10px -5px rgba(57,29,7,1)
 
     .footer-navigation
         @include mixins.flex-gap-center
+        padding: 2rem 0
 
 
 /* animations */
@@ -187,7 +214,7 @@ footer
 
 .opened-menu.open
     animation: slideInRight
-    animation-duration: 2s
+    animation-duration: 1.2s
 
 
 /* media queries */
@@ -213,6 +240,14 @@ footer
 
     .opened-menu
         width: 40vw
+
+    .button-container
+        .button-wrapper
+            @include mixins.flex-column-center
+
+            .button 
+                width: 80vw
+
 
 
 
