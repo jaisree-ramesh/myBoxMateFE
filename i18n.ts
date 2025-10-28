@@ -32,10 +32,11 @@ i18n
       en: {
         translation: {
           footerNav: [
-            { id: 0, name: "login", link: "/login" },
+            // { id: 0, name: "login", link: "/login" },
             { id: 1, name: "features", link: "/features" },
             { id: 2, name: "learn more", link: "/learn-more" },
             { id: 3, name: "support", link: "/support" },
+            { id: 4, name: "logout", link: "/logout" },
           ],
           headerNav: [
             { id: 0, name: "login", link: "/login" },
@@ -66,10 +67,11 @@ i18n
       de: {
         translation: {
           footerNav: [
-            { id: 0, name: "login", link: "/login" },
+            // { id: 0, name: "login", link: "/login" },
             { id: 1, name: "Merkmale", link: "/merkmale" },
             { id: 2, name: "mehr erfahren", link: "/mehr-erfahren" },
             { id: 3, name: "Unterstützung", link: "/unterstützung" },
+            { id: 4, name: "logout", link: "/logout" },
           ],
           headerNav: [
             { id: 0, name: "login", link: "/login" },

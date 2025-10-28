@@ -15,6 +15,15 @@ function OpenedMenu({ isOpen, onClose }: OpenedMenuProps) {
   const { t } = useTranslation();
   const footerNavigation = t("footerNav", { returnObjects: true }) as NavItem[];
 
+  // Check if user is logged in
+  const token = localStorage.getItem("token");
+
+  //  Conditionally filter out "logout" if no token
+  const filteredNavigation = footerNavigation.filter((item) => {
+    if (!token && item.name.toLowerCase() === "logout") return false;
+    return true;
+  });
+
   return (
     <section className={`opened-menu ${isOpen ? "open" : ""}`}>
       <section className="opened-menu-logo">
@@ -26,7 +35,7 @@ function OpenedMenu({ isOpen, onClose }: OpenedMenuProps) {
 
       <section className="opened-menu-wrapper">
         <LanguageSwitcher />
-        <NavigationItem data={footerNavigation} />
+        <NavigationItem data={filteredNavigation} />
       </section>
     </section>
   );
