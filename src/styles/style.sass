@@ -37,11 +37,22 @@ a, button
     cursor: pointer
     border: none
 
+.container
+    width: 100%
+    height: auto
+    padding: 4rem
+
 /* logo */
 
 .logo-container
     img
         width: variables.$small-img
+
+.logo-container, .home-image
+    .image-props
+        .image-wrapper
+            span
+                display: none
 
 /* navigation item */
 
@@ -149,6 +160,7 @@ a, button
                     background-color: variables.$dark-brown
                     border: 2px solid variables.$dark-brown
 
+
 /* header */
 
 .header-navigation
@@ -165,8 +177,10 @@ a, button
         padding: 0 0 0 4rem
         white-space: pre-line
 
-    .home-image img
-        width: 50vw
+    .home-image 
+        img
+            width: 50vw
+
 
 .button-container
     .button-wrapper
@@ -183,6 +197,46 @@ a, button
         display: inline-block
         transition: all 0.3s ease
         border: 2px solid variables.$button-border-color
+
+/* Spaces */
+
+.spaces-container, .organize-container
+    width: 100vw
+    background-color: variables.$ice
+
+.spaces-container
+    .spaces-content
+        .image-props
+            @include mixins.flex-wrap-center
+
+        .image-wrapper
+            position: relative
+            display: inline-block
+
+            span
+                width: 100%
+                text-align: center
+                position: absolute
+                bottom: 5px
+                left: 50%
+                transform: translateX(-50%)
+                background: rgba(0,0,0,0.65)
+                color: white
+                padding: 4px 8px
+                font-size: .8rem
+                opacity: 0
+                transition: opacity .2s
+                pointer-events: none
+                border-radius: 0 0 10px 10px
+
+            &:hover span
+                opacity: 1
+           
+        img
+            width: variables.$icons
+            border-radius: 10px
+            border: 2px solid variables.$dark-brown
+            padding: 1rem 
 
 
 /* footer */
