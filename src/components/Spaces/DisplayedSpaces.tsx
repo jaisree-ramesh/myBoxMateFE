@@ -20,8 +20,10 @@ import Add from "../../assets/icons/add.png";
 import { categoryIcons as initialCategoryIcons } from "../../data";
 import { type IItem } from "../../types";
 
+
 interface IRoom {
   id: string;
+  dbId?: string; // original id from DB (used for API calls)
   image?: string;
   alt: string;
 }
@@ -71,7 +73,7 @@ export default function DisplayedSpaces({
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                id: space.id,
+                id: normalize(space.id), // store normalized id in DB
                 image: space.image,
                 alt: space.alt,
               }),
@@ -123,7 +125,10 @@ export default function DisplayedSpaces({
 
           return {
             ...space,
+            // UI id is normalized so it matches products grouping
             id: finalId,
+            // keep the original DB id so we can PATCH the correct resource
+            dbId: space.id,
             alt: space.alt, // Keep original alt for display
           };
         });
@@ -214,7 +219,7 @@ export default function DisplayedSpaces({
 
       setSpaces((prev) => [
         ...prev.filter((r) => r.id !== "Create new room"),
-        { ...savedRoom, id: normalize(savedRoom.id) }, // Ensure normalized
+        { ...savedRoom, id: normalize(savedRoom.id), dbId: savedRoom.id }, // Ensure normalized and keep dbId
         { id: "Create new room", image: Add, alt: "Create new room" },
       ]);
 
@@ -272,7 +277,7 @@ export default function DisplayedSpaces({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          mb: 2,
+          mb: "2rem",
         }}
       >
         <Typography variant="h4">Spaces</Typography>
@@ -283,7 +288,7 @@ export default function DisplayedSpaces({
         {spaces
           .filter(
             (space) =>
-              space.id === "Create new room" ||
+              /* space.id === "Create new room" || */
               productsBySpace[normalize(space.id)]?.length > 0
           )
           .map((space) => (
@@ -295,6 +300,7 @@ export default function DisplayedSpaces({
                   sm: "50%",
                   md: "33.333%",
                 },
+
                 p: 1,
               }}
             >
@@ -317,7 +323,7 @@ export default function DisplayedSpaces({
                 >
                   <CardMedia
                     component="img"
-                    height="140"
+                    height="auto"
                     image={space.image || Add}
                     alt={space.alt}
                     onClick={() => handleCardClick(space.id)}
@@ -349,8 +355,11 @@ export default function DisplayedSpaces({
                             reader.onload = async (e) => {
                               const base64Image = e.target?.result as string;
                               try {
+                                // Use original DB id when calling the API (dbId),
+                                // fallback to the UI id if dbId is missing
+                                const targetId = space.dbId ?? space.id;
                                 const res = await fetch(
-                                  `http://localhost:3000/spaces/${space.id}`,
+                                  `http://localhost:3000/spaces/${targetId}`,
                                   {
                                     method: "PATCH",
                                     headers: {
@@ -392,6 +401,7 @@ export default function DisplayedSpaces({
                         alignItems: "center",
                       }}
                     >
+                      
                       <Typography variant="body2" color="text.secondary">
                         {productsBySpace[space.id]?.length || 0} products
                       </Typography>
