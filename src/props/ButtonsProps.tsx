@@ -12,9 +12,9 @@ function ButtonsProps({ data }: ButtonProps) {
               aria-label={item.ariaLabel}
               className={`button ${
                 btn.id === 0
-                  ? "button-bg" // brown background
+                  ? "button-bg" 
                   : btn.id === 1
-                  ? "button-border" // transparent with border
+                  ? "button-border" 
                   : ""
               }`}
             >
