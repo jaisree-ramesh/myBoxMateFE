@@ -5,7 +5,7 @@ export interface IUser {
   token?: string; // JWT token returned on login/register
 }
 
-export interface IItem {
+/* export interface IItem {
   _id: string;
   name: string;
   desc?: string;
@@ -19,6 +19,41 @@ export interface IItem {
   qrCode?: string;
   createdAt?: string;
   updatedAt?: string;
+} */
+
+export interface IItem {
+  _id?: string;
+  name: string;
+  desc?: string;
+  box?: string;
+  parentId?: string;
+  owner?: string;
+  collaborators?: string[];
+  createdBy?: string;
+  editedBy?: string;
+  image?: string;
+  qrCode?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// ✅ For clickable images
+export interface IImageData {
+  id: string;
+  image: string; // Required
+  alt: string;
+  link?: string;
+}
+
+export interface ISpace {
+  id: string;
+  image?: string; // Optional
+  alt: string;
+}
+
+// ✅ For component prop typing
+export interface ClickableImageItem {
+  data: IImageData[];
 }
 
 export type NavItem = {
@@ -66,4 +101,21 @@ export interface ButtonTypes {
 
 export interface ButtonProps {
   data: ButtonTypes[];
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  boxId: string;
+  qrCode: string;
+  registeredAt: string;
+}
+
+export interface ProductFormData {
+  name: string;
+  desc: string;
+  box: string;
+  parentId: string;
+  image: string;
+  imageFile?: File;
 }
