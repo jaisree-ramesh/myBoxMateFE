@@ -1,16 +1,13 @@
 import { useState } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-} from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import Add from "../../assets/icons/add.png";
 import ClickableImage from "../../props/ClickableImage";
 import ProductRegistrationDialog from "./ProductRegistrationDialog";
 import { categoryIcons as initialCategoryIcons } from "../../data";
+import { useSpaces } from "../../hooks/useSpaces";
+import { useSpaceOperations } from "../../hooks/useSpaceOperations";
+import { CreateSpaceDialog } from "./CreateSpaceDialog";
+import { normalize } from "../../utils/normalize";
 
 interface ISpace {
   id: string;
@@ -18,22 +15,27 @@ interface ISpace {
   alt: string;
 }
 
-const normalize = (s?: string) =>
-  s?.trim().toLowerCase().replace(/\s+/g, "-") || "";
-
 export default function Spaces() {
-  const [spaces, setSpaces] = useState<ISpace[]>([
-    ...initialCategoryIcons.map((space) => ({
-      ...space,
-      id: normalize(space.id),
-    })),
-    { id: "Create new room", image: Add, alt: "Create new room" },
-  ]);
-
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
   const [openCreateRoomDialog, setOpenCreateRoomDialog] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const { loading } = useSpaces(refreshTrigger);
+  const { createSpace } = useSpaceOperations(() =>
+    setRefreshTrigger((prev) => prev + 1)
+  );
+  const defaultSpaces = initialCategoryIcons.map((space) => ({
+    id: normalize(space.id),
+    image: space.image,
+    alt: space.alt,
+  }));
+
+  // Only show the predefined category icons in the clickable images.
+  // Fetched/custom spaces are not included here to avoid duplication.
+  const allSpaces: ISpace[] = [
+    ...defaultSpaces,
+    { id: "Create new room", image: Add, alt: "Create new room" },
+  ];
 
   const handleImageClick = (id: string) => {
     if (id === "Create new room") {
@@ -46,90 +48,60 @@ export default function Spaces() {
   const handleCreateRoom = async () => {
     if (!newRoomName.trim()) return;
 
-    const newSpace: ISpace = {
-      id: normalize(newRoomName),
-      alt: newRoomName.trim(),
-      image: "",
-    };
-
-    try {
-      const res = await fetch("http://localhost:3000/spaces", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newSpace),
-      });
-
-      if (!res.ok) throw new Error("Failed to save new room");
-
-      const savedSpace = await res.json();
-
-      setSpaces((prev) => [
-        ...prev.filter((r) => r.id !== "Create new room"),
-        savedSpace,
-        { id: "Create new room", image: Add, alt: "Create new room" },
-      ]);
-
+    const newSpace = await createSpace(newRoomName);
+    if (newSpace) {
       setOpenCreateRoomDialog(false);
       setNewRoomName("");
-      setSelectedSpaceId(savedSpace.id);
-      setRefreshTrigger((prev) => prev + 1);
-    } catch (err) {
-      console.error("Error creating room:", err);
+      setSelectedSpaceId(newSpace.id);
     }
   };
 
   const handleProductSave = () => {
-    // Trigger refresh in parent component
     setRefreshTrigger((prev) => prev + 1);
   };
 
-  return (
-    <section className="spaces-container container">
-      <h1>Spaces</h1>
-      <p>Choose a space and start to organize your stuff</p>
+  if (loading) {
+    return (
+      <Box sx={{ mt: 4 }}>
+        <Typography>Loading spaces...</Typography>
+      </Box>
+    );
+  }
 
-      <section className="spaces-content">
+  return (
+    <Box sx={{ mt: 4 }} className="spaces-content">
+      <Typography variant="h4" gutterBottom>
+        Spaces
+      </Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+        Choose a space and start to organize your stuff, or create your own
+        space:
+      </Typography>
+
+      <Box sx={{ display: "flex" }}>
         <ClickableImage
-          data={spaces.map((space) => ({
+          data={allSpaces.map((space) => ({
             ...space,
-            image: space.image || Add, // Use Add icon as fallback
+            image: space.image || Add,
           }))}
           onClick={handleImageClick}
         />
-      </section>
+      </Box>
 
-      <Dialog
+      <CreateSpaceDialog
         open={openCreateRoomDialog}
+        roomName={newRoomName}
+        onRoomNameChange={setNewRoomName}
         onClose={() => setOpenCreateRoomDialog(false)}
-      >
-        <DialogTitle>Create New Room</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Room Name"
-            fullWidth
-            value={newRoomName}
-            onChange={(e) => setNewRoomName(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === "Enter") {
-                handleCreateRoom();
-              }
-            }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenCreateRoomDialog(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleCreateRoom}>
-            Create & Register Product
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onCreate={handleCreateRoom}
+      />
 
       {selectedSpaceId && (
         <ProductRegistrationDialog
           open={!!selectedSpaceId}
           spaceId={selectedSpaceId}
           spaceName={
-            spaces.find((s) => s.id === selectedSpaceId)?.alt ||
+            allSpaces.find((s) => s.id === selectedSpaceId)?.alt ||
             newRoomName ||
             ""
           }
@@ -137,6 +109,6 @@ export default function Spaces() {
           onSave={handleProductSave}
         />
       )}
-    </section>
+    </Box>
   );
 }
