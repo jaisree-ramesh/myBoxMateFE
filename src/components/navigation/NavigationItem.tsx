@@ -1,4 +1,4 @@
-import { useToggle } from "../../hooks/useToggle";
+import useToggle from "../../hooks/useToggle";
 import type { NavItem, NavigationItemProps } from "../../types";
 import OpenedMenu from "./OpenedMenu";
 
