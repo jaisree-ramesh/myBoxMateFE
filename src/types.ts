@@ -55,6 +55,52 @@ export interface ISpace {
 export interface ClickableImageItem {
   data: IImageData[];
 }
+export interface IRoom {
+  id: string;
+  dbId?: string; 
+  image?: string;
+  alt: string;
+}
+
+export interface ICategoryIcon {
+  id: string;
+  image: string;
+  alt: string;
+}
+
+export interface DisplayedSpacesProps {
+  refreshTrigger?: number;
+}
+
+export interface ProductRegistrationFormProps {
+  spaceId: string;
+  spaceName: string;
+  onSubmit: (productData: Partial<IItem>) => void;
+  onCancel: () => void;
+}
+
+export interface ProductRegistrationDialogProps {
+  open: boolean;
+  spaceId: string;
+  spaceName: string;
+  onClose: () => void;
+  onSave: (data: Partial<IItem>) => void;
+}
+
+export interface ProductFormData {
+  name: string;
+  desc: string;
+  box: string;
+  parentId: string;
+  image: string;
+}
+
+// For API responses
+export interface ApiResponse<T> {
+  data?: T;
+  error?: string;
+  success: boolean;
+}
 
 export type NavItem = {
   id?: number;

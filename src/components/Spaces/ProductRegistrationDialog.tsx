@@ -34,12 +34,8 @@ export default function ProductRegistrationDialog({
       if (!res.ok) throw new Error("Failed to save product");
 
       const savedProduct = await res.json();
-
       onSave(savedProduct);
       onClose();
-
-      // Refresh the page to show updated data
-      window.location.reload();
     } catch (err) {
       console.error("Error saving product:", err);
       alert("Failed to save product. Please try again.");
@@ -49,7 +45,6 @@ export default function ProductRegistrationDialog({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Register New Product in {spaceName}</DialogTitle>
-
       <DialogContent>
         <ProductRegistrationForm
           spaceId={spaceId}
@@ -58,7 +53,6 @@ export default function ProductRegistrationDialog({
           onCancel={onClose}
         />
       </DialogContent>
-
       <DialogActions>
         <Button onClick={onClose}>Close</Button>
       </DialogActions>

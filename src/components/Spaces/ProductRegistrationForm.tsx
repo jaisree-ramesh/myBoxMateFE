@@ -25,7 +25,7 @@ export default function ProductRegistrationForm({
   const [formData, setFormData] = useState({
     name: "",
     desc: "",
-    box: spaceId, // This should already be normalized from the parent
+    box: spaceId,
     parentId: "",
     image: "",
   });
