@@ -207,10 +207,10 @@ a, button
     width: 100vw
     background-color: variables.$ice
 
-.spaces-container
-    .spaces-content
-        .image-props
-            @include mixins.flex-wrap-center
+/* Clickable Image Spaces */
+.spaces-content
+    .image-props
+        @include mixins.flex-wrap-start
 
         .image-wrapper
             position: relative
@@ -234,12 +234,20 @@ a, button
 
             &:hover span
                 opacity: 1
-           
-        img
-            width: variables.$icons
-            border-radius: 10px
-            border: 2px solid variables.$dark-brown
-            padding: 1rem 
+
+            img
+                width: variables.$icons
+                border-radius: 10px
+                border: 2px solid variables.$dark-brown
+                padding: 1rem
+
+/* Displayed Spaces Grid */
+.spaces-container
+    .spaces-grid
+        display: grid
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))
+        gap: 1rem
+        padding: 1rem
 
 
 /* footer */
