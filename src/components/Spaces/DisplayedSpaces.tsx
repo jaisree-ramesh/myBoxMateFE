@@ -1,4 +1,3 @@
-// components/Spaces/DisplayedSpaces.tsx
 import React, { useState } from "react";
 import { Box, Typography } from "@mui/material";
 
@@ -84,16 +83,34 @@ export const DisplayedSpaces: React.FC<DisplayedSpacesProps> = ({
   if (loading) return <div>Loading spaces and products...</div>;
 
   return (
-    <Box sx={{ mt: 4 }}>
+    <Box
+      sx={{
+        mt: 4,
+        p: "0 3.8rem",
+        "@media (max-width: 850px)": {
+          p: "2rem 2.8rem",
+        },
+        "@media (max-width: 768px)": {
+          p: 0
+        },
+      }}
+      className="displayed-spaces"
+    >
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: "2rem",
+          m: "0 0 2rem 0",
+          pl: 0,
+          "@media (min-width: 576px) and (max-width: 768px)": {
+            pl: "8vw",
+          },
+          "@media (max-width: 576px)": {
+            pl: "9vw",
+          },
         }}
       >
-        <Typography variant="h4">Spaces</Typography>
+        <Typography variant="body1" color="text.secondary">
+          Used spaces 🗒️{" "}
+        </Typography>
       </Box>
 
       <SpacesGrid
