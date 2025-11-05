@@ -274,6 +274,11 @@
       "id": "test-2",
       "alt": "Test 2",
       "image": ""
+    },
+    {
+      "id": "teste-3",
+      "alt": "teste 3",
+      "image": ""
     }
   ]
 }

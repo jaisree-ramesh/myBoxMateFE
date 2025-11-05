@@ -32,6 +32,7 @@ export default function Spaces() {
 
   // Only show the predefined category icons in the clickable images.
   // Fetched/custom spaces are not included here to avoid duplication.
+  
   const allSpaces: ISpace[] = [
     ...defaultSpaces,
     { id: "Create new room", image: Add, alt: "Create new room" },
@@ -69,7 +70,7 @@ export default function Spaces() {
   }
 
   return (
-    <Box sx={{ mt: 4 }} className="spaces-content">
+    <Box sx={{ m: "2rem 0" }} className="spaces-content">
       <Typography variant="h4" gutterBottom>
         Spaces
       </Typography>

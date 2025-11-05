@@ -1,4 +1,3 @@
-// components/Spaces/SpacesGrid.tsx
 import React from "react";
 import { Grid } from "@mui/material";
 import { type IRoom, type IItem } from "../../types";
@@ -20,15 +19,22 @@ export const SpacesGrid: React.FC<SpacesGridProps> = ({
   productsBySpace,
 }) => {
   return (
-    <Grid container spacing={2} className="spaces-grid">
+    <Grid
+      container
+      spacing={2}
+      className="spaces-grid"
+      sx={{
+        pb: 4,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        "@media (max-width: 768px)": {
+          flexDirection: "column",
+        },
+      }}
+    >
       {spaces.map((space) => (
-        <Grid
-          key={space.id}
-          sx={{
-            width: { xs: "100%", sm: "50%", md: "33.333%" },
-            p: 1,
-          }}
-        >
+        <Grid key={space.id}>
           <SpacesCard
             space={space}
             isSelected={space.id === selectedSpaceId}
