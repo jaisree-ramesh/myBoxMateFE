@@ -1,4 +1,3 @@
-// components/Spaces/SpaceProductsModal.tsx
 import React from "react";
 import {
   Dialog,
