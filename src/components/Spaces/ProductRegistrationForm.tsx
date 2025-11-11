@@ -6,6 +6,7 @@ import {
   Typography,
   Avatar,
   Stack,
+  Chip,
 } from "@mui/material";
 import { type IItem } from "../../types";
 
@@ -22,14 +23,16 @@ export default function ProductRegistrationForm({
   onSubmit,
   onCancel,
 }: ProductRegistrationFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Partial<IItem>>({
     name: "",
     desc: "",
     box: spaceId,
     parentId: "",
     image: "",
+    collaborators: [],
   });
 
+  const [collaboratorInput, setCollaboratorInput] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -59,22 +62,60 @@ export default function ProductRegistrationForm({
     }
   };
 
+  const handleCollaboratorAdd = () => {
+    if (
+      collaboratorInput.trim() &&
+      !formData.collaborators?.includes(collaboratorInput.trim())
+    ) {
+      setFormData((prev) => ({
+        ...prev,
+        collaborators: [
+          ...(prev.collaborators || []),
+          collaboratorInput.trim(),
+        ],
+      }));
+      setCollaboratorInput("");
+    }
+  };
+
+  const handleCollaboratorDelete = (collaboratorToDelete: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      collaborators:
+        prev.collaborators?.filter((c) => c !== collaboratorToDelete) || [],
+    }));
+  };
+
+  const handleCollaboratorKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleCollaboratorAdd();
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
+    if (!formData.name?.trim()) return;
 
-    // Ensure the box field uses the normalized spaceId
-    const productData = {
+    // DO NOT include _id here - let the backend generate it
+    const productData: Partial<IItem> = {
       ...formData,
       name: formData.name.trim(),
-      box: spaceId, // Use the normalized spaceId from props
+      box: spaceId,
+      parentId: formData.parentId || spaceId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      // Remove empty strings and empty arrays
+      desc: formData.desc?.trim() || undefined,
+      image: formData.image?.trim() || undefined,
+      collaborators: formData.collaborators?.length
+        ? formData.collaborators
+        : undefined,
     };
 
-    console.log("Submitting product:", productData);
     console.log("🔄 Submitting product data:", productData);
     console.log("📦 Space ID being used:", spaceId);
+    console.log("🚫 No ID included - backend should generate it");
     onSubmit(productData);
   };
 
@@ -86,7 +127,7 @@ export default function ProductRegistrationForm({
 
       <TextField
         fullWidth
-        label="Product Name"
+        label="Product Name *"
         name="name"
         value={formData.name}
         onChange={handleChange}
@@ -103,8 +144,67 @@ export default function ProductRegistrationForm({
         margin="normal"
         multiline
         rows={3}
+        placeholder="Enter product description..."
       />
 
+      <TextField
+        fullWidth
+        label="Box/Location"
+        name="box"
+        value={formData.box}
+        onChange={handleChange}
+        margin="normal"
+        placeholder="e.g., Shelf A, Drawer 3"
+        helperText="Specific location within the space"
+      />
+
+      <TextField
+        fullWidth
+        label="Parent ID"
+        name="parentId"
+        value={formData.parentId}
+        onChange={handleChange}
+        margin="normal"
+        placeholder="Leave empty to use space as parent"
+        helperText="For nested items hierarchy"
+      />
+
+      {/* Collaborators Section */}
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="subtitle2" gutterBottom>
+          Collaborators
+        </Typography>
+        <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+          <TextField
+            size="small"
+            label="Add collaborator"
+            value={collaboratorInput}
+            onChange={(e) => setCollaboratorInput(e.target.value)}
+            onKeyPress={handleCollaboratorKeyPress}
+            sx={{ flexGrow: 1 }}
+          />
+          <Button
+            variant="outlined"
+            onClick={handleCollaboratorAdd}
+            disabled={!collaboratorInput.trim()}
+          >
+            Add
+          </Button>
+        </Stack>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+          {formData.collaborators?.map((collaborator, index) => (
+            <Chip
+              key={index}
+              label={collaborator}
+              onDelete={() => handleCollaboratorDelete(collaborator)}
+              size="small"
+              variant="outlined"
+            />
+          ))}
+        </Box>
+      </Box>
+
+      {/* Image Upload Section */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mt: 2 }}>
         <Avatar
           src={preview || formData.image}
@@ -141,7 +241,7 @@ export default function ProductRegistrationForm({
         <Button
           type="submit"
           variant="contained"
-          disabled={!formData.name.trim()}
+          disabled={!formData.name?.trim()}
         >
           Register Product
         </Button>

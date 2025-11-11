@@ -5,6 +5,26 @@ import { normalize } from "../utils/normalize";
 
 const initialCategoryIcons: ICategoryIcon[] = categoryIcons;
 
+// Define the backend response types
+interface BackendProduct {
+  id: string;
+  name: string;
+  desc?: string;
+  box?: string;
+  parentId?: string;
+  image?: string;
+  collaborators?: string[];
+  qrCode?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface BackendSpace {
+  id: string;
+  image: string;
+  alt: string;
+}
+
 export const useSpaces = (refreshTrigger: number = 0) => {
   const [spaces, setSpaces] = useState<IRoom[]>([]);
   const [products, setProducts] = useState<IItem[]>([]);
@@ -14,10 +34,10 @@ export const useSpaces = (refreshTrigger: number = 0) => {
   const initializeDefaultSpaces = async () => {
     try {
       const spacesRes = await fetch("http://localhost:3000/spaces");
-      const existingSpaces = await spacesRes.json();
+      const existingSpaces: BackendSpace[] = await spacesRes.json();
 
       const existingIds = new Set(
-        existingSpaces.map((s: IRoom) => normalize(s.id))
+        existingSpaces.map((s: BackendSpace) => normalize(s.id))
       );
       const spacesToAdd = initialCategoryIcons.filter(
         (icon) => !existingIds.has(normalize(icon.id))
@@ -44,6 +64,22 @@ export const useSpaces = (refreshTrigger: number = 0) => {
     }
   };
 
+  // Function to transform backend product data to frontend format
+  const transformProductData = (productsData: BackendProduct[]): IItem[] => {
+    return productsData.map((product) => ({
+      ...product,
+      _id: product.id, // Map id to _id
+    }));
+  };
+
+  // Function to transform backend space data to frontend format
+  const transformSpaceData = (spacesData: BackendSpace[]): IRoom[] => {
+    return spacesData.map((space) => ({
+      ...space,
+      _id: space.id,
+    }));
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -60,12 +96,24 @@ export const useSpaces = (refreshTrigger: number = 0) => {
         throw new Error("Failed to fetch data");
       }
 
-      const spacesData: IRoom[] = await spacesRes.json();
-      const productsData: IItem[] = await productsRes.json();
+      const spacesData: BackendSpace[] = await spacesRes.json();
+      const productsData: BackendProduct[] = await productsRes.json();
+
+      console.log("🔄 Raw products from API:", productsData);
+
+      // Transform the data
+      const transformedProducts = transformProductData(productsData);
+      const transformedSpaces = transformSpaceData(spacesData);
+
+      console.log("🔄 Transformed products:", transformedProducts);
+      console.log(
+        "📋 Products with _id:",
+        transformedProducts.filter((p) => p._id).length
+      );
 
       // Normalize spaces
       const usedIds = new Set<string>();
-      const normalizedSpaces = spacesData.map((space) => {
+      const normalizedSpaces = transformedSpaces.map((space) => {
         const baseId = normalize(space.id);
         let finalId = baseId;
         let counter = 1;
@@ -84,7 +132,7 @@ export const useSpaces = (refreshTrigger: number = 0) => {
         };
       });
 
-      setProducts(productsData);
+      setProducts(transformedProducts);
       setSpaces(normalizedSpaces);
     } catch (err) {
       console.error("Fetch error:", err);
@@ -98,7 +146,10 @@ export const useSpaces = (refreshTrigger: number = 0) => {
     fetchData();
   }, [refreshTrigger]);
 
-  const refresh = () => fetchData();
+  const refresh = () => {
+    console.log("🔄 Manual refresh triggered");
+    fetchData();
+  };
 
   return {
     spaces,

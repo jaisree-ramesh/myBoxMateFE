@@ -18,6 +18,7 @@ interface ISpace {
 export default function Spaces() {
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
   const [openCreateRoomDialog, setOpenCreateRoomDialog] = useState(false);
+  const [openProductDialog, setOpenProductDialog] = useState(false); // New state
   const [newRoomName, setNewRoomName] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { loading } = useSpaces(refreshTrigger);
@@ -30,9 +31,6 @@ export default function Spaces() {
     alt: space.alt,
   }));
 
-  // Only show the predefined category icons in the clickable images.
-  // Fetched/custom spaces are not included here to avoid duplication.
-  
   const allSpaces: ISpace[] = [
     ...defaultSpaces,
     { id: "Create new room", image: Add, alt: "Create new room" },
@@ -43,6 +41,7 @@ export default function Spaces() {
       setOpenCreateRoomDialog(true);
     } else {
       setSelectedSpaceId(id);
+      setOpenProductDialog(true); // Open product dialog when space is selected
     }
   };
 
@@ -54,11 +53,18 @@ export default function Spaces() {
       setOpenCreateRoomDialog(false);
       setNewRoomName("");
       setSelectedSpaceId(newSpace.id);
+      setOpenProductDialog(true); // Open product dialog after creating room
     }
   };
 
   const handleProductSave = () => {
     setRefreshTrigger((prev) => prev + 1);
+    setOpenProductDialog(false); // Close dialog after saving
+  };
+
+  const handleProductDialogClose = () => {
+    setOpenProductDialog(false);
+    setSelectedSpaceId(null);
   };
 
   if (loading) {
@@ -97,19 +103,17 @@ export default function Spaces() {
         onCreate={handleCreateRoom}
       />
 
-      {selectedSpaceId && (
-        <ProductRegistrationDialog
-          open={!!selectedSpaceId}
-          spaceId={selectedSpaceId}
-          spaceName={
-            allSpaces.find((s) => s.id === selectedSpaceId)?.alt ||
-            newRoomName ||
-            ""
-          }
-          onClose={() => setSelectedSpaceId(null)}
-          onSave={handleProductSave}
-        />
-      )}
+      <ProductRegistrationDialog
+        open={openProductDialog}
+        spaceId={selectedSpaceId || ""}
+        spaceName={
+          allSpaces.find((s) => s.id === selectedSpaceId)?.alt ||
+          newRoomName ||
+          ""
+        }
+        onClose={handleProductDialogClose}
+        onSave={handleProductSave}
+      />
     </Box>
   );
 }
