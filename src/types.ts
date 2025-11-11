@@ -22,7 +22,7 @@ export interface IUser {
 } */
 
 export interface IItem {
-  _id?: string;
+  _id?: string; 
   name: string;
   desc?: string;
   box?: string;
@@ -40,7 +40,7 @@ export interface IItem {
 // ✅ For clickable images
 export interface IImageData {
   id: string;
-  image: string; // Required
+  image: string; 
   alt: string;
   link?: string;
 }
@@ -158,10 +158,23 @@ export interface Product {
 }
 
 export interface ProductFormData {
+  id: string;
   name: string;
   desc: string;
   box: string;
   parentId: string;
   image: string;
   imageFile?: File;
+}
+
+/* modal types */
+export interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}
+
+export interface CardProps {
+  onClick: () => void;
+  children: React.ReactNode;
 }
