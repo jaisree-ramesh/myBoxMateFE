@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { type CredentialResponse } from "@react-oauth/google";
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -19,7 +20,6 @@ export function useAuth() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      // storing login user info in local storage
       localStorage.setItem("token", data.token);
       localStorage.setItem(
         "user",
@@ -29,10 +29,10 @@ export function useAuth() {
         })
       );
 
-      return data; // Return data to the component if needed
+      return data;
     } catch (err: any) {
       setError(err.message);
-      throw err; // rethrow if the component wants to handle it
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -60,7 +60,6 @@ export function useAuth() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Registration failed");
 
-      // inside register()
       localStorage.setItem("token", data.token);
       localStorage.setItem(
         "user",
@@ -73,11 +72,47 @@ export function useAuth() {
       return data;
     } catch (err: any) {
       setError(err.message);
-      throw err; // rethrow for the component
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  return { login, register, loading, error };
+  const googleLogin = async (response: CredentialResponse) => {
+    if (!response.credential) {
+      setError("Google login failed");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_URL}/api/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: response.credential }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Google login failed");
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          username: data.username || data.name || "User",
+          email: data.email,
+        })
+      );
+
+      return data;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Single return with all functions included
+  return { login, register, googleLogin, loading, error };
 }

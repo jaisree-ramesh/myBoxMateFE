@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import ImageProps from "../props/ImageProps";
 import { closeMenu, myBoxOpenedMenu } from "../data";
-import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
+import { useTranslation } from "react-i18next";
 
 interface ILoginProps {
   isOpen: boolean;
@@ -10,11 +11,12 @@ interface ILoginProps {
 }
 
 export default function Login({ isOpen, onClose }: ILoginProps) {
-  const API_URL = import.meta.env.VITE_API_URL;
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, register, loading, error } = useAuth();
+
+  const { login, register, googleLogin, loading, error } = useAuth();
 
   if (!isOpen) return null;
 
@@ -30,32 +32,6 @@ export default function Login({ isOpen, onClose }: ILoginProps) {
       window.location.reload();
     } catch {
       // error handled in hook
-    }
-  };
-
-  const handleGoogleLogin = async (response: CredentialResponse) => {
-    if (!response.credential) throw new Error("Login failed");
-    try {
-      const res = await fetch(`${API_URL}/api/auth/google`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: response.credential }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Google login failed");
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          username: data.username || data.name || "User",
-          email: data.email,
-        })
-      );
-      onClose();
-      window.location.reload();
-    } catch (err: any) {
-      console.error(err);
     }
   };
 
@@ -109,14 +85,14 @@ export default function Login({ isOpen, onClose }: ILoginProps) {
                   disabled={loading}
                   onClick={() => handleAction("login")}
                 >
-                  Login
+                  {t("login")}
                 </button>
                 <button
                   type="button"
                   disabled={loading}
                   onClick={() => handleAction("register")}
                 >
-                  Register
+                  {t("register")}
                 </button>
               </>
             )}
@@ -125,7 +101,13 @@ export default function Login({ isOpen, onClose }: ILoginProps) {
 
         <div className="google-login-btn">
           <GoogleLogin
-            onSuccess={handleGoogleLogin}
+            onSuccess={async (response) => {
+              if (googleLogin) {
+                await googleLogin(response);
+                onClose();
+                window.location.reload();
+              }
+            }}
             onError={() => console.log("Google login failed")}
           />
         </div>

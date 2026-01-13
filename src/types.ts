@@ -30,6 +30,8 @@ export type NavItem = {
 
 export type NavigationItemProps = {
   data: NavItem[];
+  onOpenCollaborators?: () => void;
+  onOpenLogin?: () => void;
 };
 
 export interface ImageItem {
@@ -66,4 +68,10 @@ export interface ButtonTypes {
 
 export interface ButtonProps {
   data: ButtonTypes[];
+}
+
+export interface CollaboratorInfo {
+  id: string;
+  username: string;
+  email: string;
 }

@@ -37,11 +37,16 @@ i18n
             { id: 2, name: "learn more", link: "/learn-more" },
             { id: 3, name: "support", link: "/support" },
             { id: 4, name: "logout", link: "/logout" },
+            { id: 5, name: "Collaborators" },
           ],
           headerNav: [
             { id: 0, name: "login", link: "/login" },
             { id: 1, name: "menu", link: "/" },
           ],
+          collaborators: "Collaborators",
+          login: "Login",
+          register: "Register",
+          noCollaborators: "No collaborators yet.",
           homeText: [
             {
               title: "My Box Mate:\n Organize. Track. Relax.",
@@ -71,12 +76,17 @@ i18n
             { id: 1, name: "Merkmale", link: "/merkmale" },
             { id: 2, name: "mehr erfahren", link: "/mehr-erfahren" },
             { id: 3, name: "Unterstützung", link: "/unterstützung" },
-            { id: 4, name: "logout", link: "/logout" },
+            { id: 4, name: "Abmelden", link: "/logout" },
+            { id: 5, name: "Mitwirkende" },
           ],
           headerNav: [
-            { id: 0, name: "login", link: "/login" },
-            { id: 1, name: "menu", link: "/" },
+            { id: 0, name: "Anmelden", link: "/login" },
+            { id: 1, name: "Menü", link: "/" },
           ],
+          collaborators: "Mitwirkende",
+          noCollaborators: "Noch keine Mitwirkenden.",
+          login: "Anmelden",
+          register: "Registrieren",
           homeText: [
             {
               title: "My Box Mate:\n Organisieren. Verfolgen. Entspannen.",
