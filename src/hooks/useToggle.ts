@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 
-export function useToggle(initialState = false) {
+export default function useToggle(initialState = false) {
   const [isOpen, setIsOpen] = useState(initialState);
 
   const open = useCallback(() => setIsOpen(true), []);

@@ -31,8 +31,7 @@ export const logoImage = [
   },
 ];
 
-export const homeImage =
-[
+export const homeImage = [
   {
     id: 1,
     image: MyBoxMateFront,
