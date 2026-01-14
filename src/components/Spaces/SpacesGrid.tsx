@@ -28,9 +28,9 @@ export const SpacesGrid: React.FC<SpacesGridProps> = ({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        flexGrow: 1,
         flexBasis: "auto",
         margin: "1rem 0",
+        flexWrap: "wrap",
       }}
     >
       {spaces.map((space) => (
