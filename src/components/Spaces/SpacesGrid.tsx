@@ -21,16 +21,16 @@ export const SpacesGrid: React.FC<SpacesGridProps> = ({
   return (
     <Grid
       container
-      spacing={2}
+      spacing="0.3rem"
       className="spaces-grid"
       sx={{
         pb: 4,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        "@media (max-width: 768px)": {
-          flexDirection: "column",
-        },
+        flexGrow: 1,
+        flexBasis: "auto",
+        margin: "1rem 0",
       }}
     >
       {spaces.map((space) => (
