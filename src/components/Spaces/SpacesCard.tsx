@@ -33,6 +33,7 @@ export const SpacesCard: React.FC<SpaceCardProps> = ({
         width: "100%",
         borderRadius: "10px",
         p: 0,
+        m: "1rem 0",
         border: isSelected ? 2 : 1,
         cursor: "pointer",
         borderColor: "rgba(160, 82, 45, 0.15)",
@@ -82,7 +83,7 @@ export const SpacesCard: React.FC<SpaceCardProps> = ({
         </CardOverflow>
 
         {/* TITLE */}
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
           <Typography
             textColor="#4F4F4F"
             sx={{
@@ -133,13 +134,14 @@ export const SpacesCard: React.FC<SpaceCardProps> = ({
             letterSpacing: "1px",
             textTransform: "uppercase",
             borderLeft: "1px solid",
-            borderColor: "divider",
+            borderColor: "rgba(99, 107, 116, 0.2)",
 
             "@media (max-width: 635px)": {
               writingMode: "horizontal-tb",
               borderLeft: "none",
               borderTop: "1px solid",
               borderRadius: "0 0 8px 8px",
+              borderColor: "rgba(99, 107, 116, 0.2)",
               py: 1,
             },
           }}
