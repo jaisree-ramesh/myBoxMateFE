@@ -89,7 +89,7 @@ export const DisplayedSpaces: React.FC<DisplayedSpacesProps> = ({
           m: "0 0 2rem 0",
         }}
       >
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="h5" gutterBottom>
           Used spaces 🗒️
         </Typography>
       </Box>
