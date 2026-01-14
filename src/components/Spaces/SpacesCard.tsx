@@ -3,11 +3,11 @@ import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
 import CardOverflow from "@mui/joy/CardOverflow";
 import Typography from "@mui/joy/Typography";
-import EditIcon from "@mui/icons-material/Edit";
-import { type IRoom } from "../../types";
-import Add from "../../assets/icons/add.png";
-import { IconButton } from "@mui/material";
 import Box from "@mui/joy/Box";
+import { IconButton } from "@mui/material";
+import Add from "../../assets/icons/add.png";
+import { type IRoom } from "../../types";
+import EditIcon from "@mui/icons-material/Edit";
 
 interface SpaceCardProps {
   space: IRoom;
@@ -30,98 +30,103 @@ export const SpacesCard: React.FC<SpaceCardProps> = ({
       variant="outlined"
       onClick={() => onCardClick(space.id)}
       sx={{
-        width: "40vw",
+        width: "100%",
         borderRadius: "10px",
         p: 0,
         border: isSelected ? 2 : 1,
-        display: "flex",
-        justifyContent: "space-between",
         cursor: "pointer",
         borderColor: "rgba(160, 82, 45, 0.15)",
         boxShadow: "0px 0px 10px -2px rgba(160, 82, 45, 0.34)",
-        "@media (max-width: 768px)": {
-          width: "87vw",
-        },
-        "@media (max-width: 576px)": {
+        gap: 0,
+        "@media (max-width: 635px)": {
           flexDirection: "column",
-          alignItems: "center",
-          maxWidth: "82vw",
-          gap: 2,
-          p: 0,
         },
       }}
     >
-      <Box
+      {/* MAIN CONTENT */}
+      <CardContent
         sx={{
           display: "flex",
-          justifyContent: "space-between",
-          width: "100%",
+          alignItems: "flex-start",
           gap: 2,
           p: "1rem",
+          width: "100%",
+          fontSize: "clamp(1rem, 0.643rem + 0.952vw, 1.5rem)",
+          flexGrow: 1,
         }}
       >
-        <CardOverflow sx={{ width: "min-content" }}>
+        {/* IMAGE */}
+        <CardOverflow className="space-image">
           <AspectRatio
             ratio="1"
             sx={{
-              width: "15vw",
+              width: "18vw",
               borderRadius: 8,
+              overflowWrap: "anywhere",
+
               "&:hover": {
                 opacity: 0.8,
                 transform: "scale(1.05)",
                 transition: "transform 0.3s",
               },
-              "@media (max-width: 768px)": { minWidth: "35vw" },
-              "@media (max-width: 576px)": {
-                width: "100%",
-                maxWidth: "50vw",
+              "@media (max-width: 1256px)": {
+                width: "35vw",
+              },
+              "@media (max-width: 455px)": {
+                width: "85vw",
               },
             }}
           >
-            <img
-              src={space.image || Add}
-              srcSet={space.image || Add}
-              loading="lazy"
-              alt={space.alt}
-              onClick={() => onCardClick(space.id)}
-              className="space-card-image"
-            />
+            <img src={space.image || Add} loading="lazy" alt={space.alt} />
           </AspectRatio>
         </CardOverflow>
-        <CardContent>
+
+        {/* TITLE */}
+        <Box sx={{ display: "flex", gap: 2 }}>
           <Typography
             textColor="#4F4F4F"
             sx={{
               fontWeight: "sm",
-              fontSize: "xl",
               textTransform: "capitalize",
+              flexGrow: 1,
+              overflowWrap: "anywhere",
+              fontSize: "clamp(1rem, 0.643rem + 0.952vw, 1.5rem)",
             }}
           >
             {space.alt}
           </Typography>
-        </CardContent>
-        <IconButton
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation();
-            onImageEdit(space);
-          }}
-          sx={{
-            color: "#4F4F4F",
-            alignItems: "flex-start",
-            "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
-          }}
-        >
-          <EditIcon />
-        </IconButton>
-      </Box>
+
+          {/* EDIT BUTTON */}
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onImageEdit(space);
+            }}
+            sx={{
+              color: "#4F4F4F",
+              alignSelf: "flex-start",
+              "&:hover": {
+                bgcolor: "rgba(255, 255, 255, 0.1)",
+              },
+            }}
+          >
+            <EditIcon />
+          </IconButton>
+        </Box>
+      </CardContent>
+
+      {/* SIDE / BOTTOM OVERFLOW */}
       {space.id !== "Create new room" && (
         <CardOverflow
           variant="soft"
           color="neutral"
           sx={{
-            px: 0.2,
+            px: 0.5,
+            py: 1,
             writingMode: "vertical-rl",
+            display: "flex",
+            alignItems: "center",
             justifyContent: "center",
             fontSize: "xs",
             fontWeight: "xl",
@@ -129,18 +134,17 @@ export const SpacesCard: React.FC<SpaceCardProps> = ({
             textTransform: "uppercase",
             borderLeft: "1px solid",
             borderColor: "divider",
-            "@media (max-width: 576px)": {
+
+            "@media (max-width: 635px)": {
               writingMode: "horizontal-tb",
               borderLeft: "none",
               borderTop: "1px solid",
-              borderColor: "divider",
-              textAlign: "center",
               borderRadius: "0 0 8px 8px",
-              padding: "0.2rem",
+              py: 1,
             },
           }}
         >
-          {productCount} {productCount > 1 ? `${"products"}` : `${"product"}`}
+          {productCount} {productCount > 1 ? "products" : "product"}
         </CardOverflow>
       )}
     </Card>
