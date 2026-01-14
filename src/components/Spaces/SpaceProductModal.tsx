@@ -235,7 +235,15 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
 
               {/* Products grid */}
               <Box sx={{ maxHeight: "400px", overflow: "auto", mb: 2 }}>
-                <Grid container spacing={2}>
+                <Grid
+                  container
+                  spacing={2}
+                  sx={{
+                    "@media (max-width: 576px)": {
+                      flexDirection: "column",
+                    },
+                  }}
+                >
                   {products.map((product) => (
                     <Grid
                       item
@@ -501,6 +509,9 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                   gap: 1,
                   pt: 2,
                   borderTop: "1px solid #FFA500",
+                  "@media (max-width: 576px)": {
+                    justifyContent: "center",
+                  },
                 }}
               >
                 <Button

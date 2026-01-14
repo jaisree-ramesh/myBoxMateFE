@@ -1,5 +1,5 @@
-import DisplayedSpaces from "../components/Spaces/DisplayedSpaces";
-import Spaces from "../components/Spaces/Spaces";
+import DisplayedSpaces from "../components/spaces/DisplayedSpaces";
+import Spaces from "../components/spaces/Spaces";
 import { useState } from "react";
 
 function Organize() {

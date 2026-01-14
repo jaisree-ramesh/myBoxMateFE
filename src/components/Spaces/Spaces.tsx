@@ -85,7 +85,7 @@ export default function Spaces() {
         space:
       </Typography>
 
-      <Box sx={{ display: "flex" }}>
+      <Box sx={{ display: "flex", width: "100%", margin: "0 auto" }}>
         <ClickableImage
           data={allSpaces.map((space) => ({
             ...space,
