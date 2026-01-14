@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useToggle } from "../../hooks/useToggle";
+import useToggle from "../../hooks/useToggle";
 import type { NavItem, NavigationItemProps } from "../../types";
 import OpenedMenu from "./OpenedMenu";
 import Login from "../Login";
