@@ -76,7 +76,7 @@ export default function Spaces() {
   }
 
   return (
-    <Box sx={{ m: "2rem 0" }} className="spaces-content">
+    <Box sx={{ m: "2rem 0 0 0" }} className="spaces-content">
       <Typography variant="h4" gutterBottom>
         Spaces
       </Typography>
