@@ -248,9 +248,7 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                     <Grid
                       item
                       key={product._id || `no-id-${product.name}`}
-                      xs={12}
-                      sm={6}
-                      md={4}
+                      size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
                     >
                       <Card
                         sx={{
