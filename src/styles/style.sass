@@ -89,7 +89,7 @@ a, button
     position: fixed
     top: 0
     right: 0
-    width: 30vw
+    width: 25vw
     height: 100%
     background-color: variables.$orange
     padding: 0
@@ -209,9 +209,13 @@ a, button
     -webkit-box-shadow: variables.$card-box-shadow
     box-shadow: variables.$card-box-shadow
 
+.space-image 
+    img
+        width: inherit
+
 /* Clickable Image Spaces */
-.spaces-content
-    padding: 2rem 4rem
+.spaces-content, .displayed-spaces
+    padding: 2rem 
     width: 100%
     .image-props
         display: grid
@@ -247,7 +251,7 @@ a, button
             img
                 width: 100%
                 height: 100%
-                object-fit: contain
+                object-fit: cover
                 border-radius: 10px
                 box-shadow: variables.$card-box-shadow
                 -webkit-box-shadow: variables.$card-box-shadow
@@ -325,7 +329,7 @@ footer
 
 @media screen and ( max-width: variables.$breakpoint-md-lg )
     .spaces-content
-        padding: 2rem 3rem
+        padding: 2rem
         
         .image-props
             gap: 3rem 1rem
@@ -558,8 +562,8 @@ footer
 // Responsive Design
 @media (max-width: 768px)
     .wood-box
-        width: 90vw
-        height: 85vh
+        max-width: 80vw
+        height: 70vh
     
     .box-content
         padding: 1.5rem
