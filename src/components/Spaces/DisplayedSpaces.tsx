@@ -83,33 +83,14 @@ export const DisplayedSpaces: React.FC<DisplayedSpacesProps> = ({
   if (loading) return <div>Loading spaces and products...</div>;
 
   return (
-    <Box
-      sx={{
-        mt: 4,
-        p: "0 3.8rem",
-        "@media (max-width: 850px)": {
-          p: "2rem 2.8rem",
-        },
-        "@media (max-width: 768px)": {
-          p: 0
-        },
-      }}
-      className="displayed-spaces"
-    >
+    <Box className="displayed-spaces">
       <Box
         sx={{
           m: "0 0 2rem 0",
-          pl: 0,
-          "@media (min-width: 576px) and (max-width: 768px)": {
-            pl: "8vw",
-          },
-          "@media (max-width: 576px)": {
-            pl: "9vw",
-          },
         }}
       >
         <Typography variant="body1" color="text.secondary">
-          Used spaces 🗒️{" "}
+          Used spaces 🗒️
         </Typography>
       </Box>
 
