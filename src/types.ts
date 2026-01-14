@@ -111,6 +111,8 @@ export type NavItem = {
 
 export type NavigationItemProps = {
   data: NavItem[];
+  onOpenCollaborators?: () => void;
+  onOpenLogin?: () => void;
 };
 
 export interface ImageItem {
@@ -149,32 +151,8 @@ export interface ButtonProps {
   data: ButtonTypes[];
 }
 
-export interface Product {
-  id: number;
-  name: string;
-  boxId: string;
-  qrCode: string;
-  registeredAt: string;
-}
-
-export interface ProductFormData {
+export interface CollaboratorInfo {
   id: string;
-  name: string;
-  desc: string;
-  box: string;
-  parentId: string;
-  image: string;
-  imageFile?: File;
-}
-
-/* modal types */
-export interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-}
-
-export interface CardProps {
-  onClick: () => void;
-  children: React.ReactNode;
+  username: string;
+  email: string;
 }
