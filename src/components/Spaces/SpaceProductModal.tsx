@@ -246,7 +246,6 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                 >
                   {products.map((product) => (
                     <Grid
-                      item
                       key={product._id || `no-id-${product.name}`}
                       size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
                     >
@@ -542,14 +541,16 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
       />
 
       {/* Product Edit Dialog */}
-      <ProductEditDialog
-        open={openEditDialog}
-        product={productToEdit}
-        spaceId={space?.id || ""}
-        spaceName={space?.alt || ""}
-        onClose={handleEditDialogClose}
-        onSave={handleProductEditSave}
-      />
+      {openEditDialog && productToEdit && (
+        <ProductEditDialog
+          open={openEditDialog}
+          product={productToEdit}
+          spaceId={space?.id || ""}
+          spaceName={space?.alt || ""}
+          onClose={handleEditDialogClose}
+          onSave={handleProductEditSave}
+        />
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog
