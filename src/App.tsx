@@ -11,8 +11,7 @@ function App() {
       <div>
         <HeaderNavigation />
         <Home />
-        <Organize />
-        
+        <Organize />  
         <FooterNavigation />
       </div>
     </>

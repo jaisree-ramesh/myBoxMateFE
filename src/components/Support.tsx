@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import emailjs from "@emailjs/browser";
 import { useState, useEffect } from "react";
+import emailjs from "@emailjs/browser";
 import ImageProps from "../props/ImageProps";
 import { myBoxOpenedMenu, closeMenu } from "../data";
 
@@ -10,10 +10,12 @@ interface ISupportProps {
 }
 
 const Support = (props: ISupportProps) => {
+  if (!props.isOpen) return null;
+
   const { t } = useTranslation();
-  const serviceId = import.meta.env.EMAILJS_SERVICEID;
-  const templateId = import.meta.env.EMAILJS_TEMPLATEID;
-  const publicKey = import.meta.env.EMAILJS_PUBLICKEY;
+  const serviceId = import.meta.env.VITE_EMAILJS_SERVICEID;
+  const templateId = import.meta.env.VITE_EMAILJS_TEMPLATEID;
+  const publicKey = import.meta.env.VITE_EMAILJS_PUBLICKEY;
 
   const [form, setForm] = useState({
     name: "",
@@ -23,7 +25,7 @@ const Support = (props: ISupportProps) => {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -40,12 +42,12 @@ const Support = (props: ISupportProps) => {
           message: form.message,
           time: new Date().toLocaleString(),
         },
-        publicKey
+        publicKey,
       );
-      alert(t("contactDialog.success"));
+      alert(t("supportSuccess"));
       props.onClose();
     } catch (error) {
-      alert(t("contactDialog.error"));
+      alert(t("supportError"));
     }
   };
 
@@ -62,6 +64,7 @@ const Support = (props: ISupportProps) => {
           <section className="opened-menu-logo">
             <ImageProps data={myBoxOpenedMenu} />
           </section>
+          <h2>{t("supportTitle")}</h2>
           <section className="close-menu" onClick={props.onClose}>
             <ImageProps data={closeMenu} />
           </section>
@@ -72,29 +75,35 @@ const Support = (props: ISupportProps) => {
           style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
           <input
-            type="name"
-            placeholder="Name"
+            type="text"
+            name="name"
+            placeholder={t("name")}
             value={form.name}
             onChange={handleChange}
             required
           />
+
           <input
             type="email"
-            placeholder="Email"
+            name="email"
+            placeholder={t("email")}
             value={form.email}
             onChange={handleChange}
             required
           />
+
           <input
-            type="subject"
-            placeholder="Subject"
+            type="text"
+            name="subject"
+            placeholder={t("subject")}
             value={form.subject}
             onChange={handleChange}
             required
           />
+
           <textarea
-            placeholder="Message"
             name="message"
+            placeholder={t("message")}
             value={form.message}
             onChange={handleChange}
             required
@@ -110,11 +119,7 @@ const Support = (props: ISupportProps) => {
             }}
           >
             <>
-              <button
-                type="button"
-                disabled={isDisabled}
-                onClick={() => handleSend()}
-              >
+              <button type="button" disabled={isDisabled} onClick={handleSend}>
                 {t("send")}
               </button>
             </>

@@ -7,7 +7,7 @@ function ImageProps({ data }: ImageItem) {
         <a href={item.link} rel="noopener noreferrer" key={item.id}>
           <div className="image-wrapper">
             <img src={item.image} alt={item.alt || ""} loading="lazy" />
-            <span>{item.alt}</span>
+            {/* <span>{item.alt}</span> */}
           </div>
         </a>
       ))}
