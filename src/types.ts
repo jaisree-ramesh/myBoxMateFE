@@ -113,6 +113,7 @@ export type NavigationItemProps = {
   data: NavItem[];
   onOpenCollaborators?: () => void;
   onOpenLogin?: () => void;
+  onOpenSupport?: () => void;
 };
 
 export interface ImageItem {

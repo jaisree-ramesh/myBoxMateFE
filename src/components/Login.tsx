@@ -42,10 +42,14 @@ export default function Login({ isOpen, onClose }: ILoginProps) {
           <section className="opened-menu-logo">
             <ImageProps data={myBoxOpenedMenu} />
           </section>
+          <h2>{t("loginTitle")}</h2>
           <section className="close-menu" onClick={onClose}>
             <ImageProps data={closeMenu} />
           </section>
         </section>
+
+        <br />
+        <br />
 
         <form
           onSubmit={(e) => e.preventDefault()}
@@ -53,14 +57,14 @@ export default function Login({ isOpen, onClose }: ILoginProps) {
         >
           <input
             type="email"
-            placeholder="Email"
+            placeholder={t("email")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
           <input
             type="password"
-            placeholder="Password"
+            placeholder={t("password")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -85,14 +89,14 @@ export default function Login({ isOpen, onClose }: ILoginProps) {
                   disabled={loading}
                   onClick={() => handleAction("login")}
                 >
-                  {t("login")}
+                  {t("login.0.buttonText")}
                 </button>
                 <button
                   type="button"
                   disabled={loading}
                   onClick={() => handleAction("register")}
                 >
-                  {t("register")}
+                  {t("loginButtonText")}
                 </button>
               </>
             )}
@@ -108,7 +112,7 @@ export default function Login({ isOpen, onClose }: ILoginProps) {
                 window.location.reload();
               }
             }}
-            onError={() => console.log("Google login failed")}
+            onError={() => console.log(t("googleError"))}
           />
         </div>
       </div>

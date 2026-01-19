@@ -10,6 +10,7 @@ type OpenedMenuProps = {
   onClose: () => void;
   onOpenCollaborators: () => void;
   onOpenLogin: () => void;
+  onOpenSupport: () => void;
 };
 
 function OpenedMenu({
@@ -17,6 +18,7 @@ function OpenedMenu({
   onClose,
   onOpenCollaborators,
   onOpenLogin,
+  onOpenSupport,
 }: OpenedMenuProps) {
   const { t } = useTranslation();
   const footerNavigation = t("footerNav", { returnObjects: true }) as NavItem[];
@@ -50,6 +52,7 @@ function OpenedMenu({
            }, 300); // wait 300ms for animation
          }}
          onOpenLogin={onOpenLogin}
+          onOpenSupport={onOpenSupport}
        />
      </section>
    </section>

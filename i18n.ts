@@ -33,18 +33,18 @@ i18n
         translation: {
           footerNav: [
             // { id: 0, name: "login", link: "/login" },
+            { id: 5, name: "Collaborators" },
             { id: 1, name: "features", link: "/features" },
             { id: 2, name: "learn more", link: "/learn-more" },
             { id: 3, name: "support", link: "/support" },
             { id: 4, name: "logout", link: "/logout" },
-            { id: 5, name: "Collaborators" },
           ],
           headerNav: [
             { id: 0, name: "login", link: "/login" },
             { id: 1, name: "menu", link: "/" },
           ],
           collaborators: "Collaborators",
-          login: "Login",
+
           register: "Register",
           noCollaborators: "No collaborators yet.",
           homeText: [
@@ -67,17 +67,31 @@ i18n
               ],
             },
           ],
+
+          supportTitle: "Support",
+          name: "Name",
+          email: "Email",
+          subject: "Subject",
+          message: "Message",
+          send: "Send",
+          supportSuccess: "Your message has been sent successfully!",
+          supportError:
+            "An error occurred while sending your message. Please try again.",
+          loginTitle: "Login",
+          password: "Password",
+          loginButtonText: "Login",
+          googleError: "Google sign-in failed. Please try again.",
         },
       },
       de: {
         translation: {
           footerNav: [
             // { id: 0, name: "login", link: "/login" },
+            { id: 5, name: "Mitwirkende" },
             { id: 1, name: "Merkmale", link: "/merkmale" },
             { id: 2, name: "mehr erfahren", link: "/mehr-erfahren" },
             { id: 3, name: "Unterstützung", link: "/unterstützung" },
             { id: 4, name: "Abmelden", link: "/logout" },
-            { id: 5, name: "Mitwirkende" },
           ],
           headerNav: [
             { id: 0, name: "Anmelden", link: "/login" },
@@ -85,7 +99,6 @@ i18n
           ],
           collaborators: "Mitwirkende",
           noCollaborators: "Noch keine Mitwirkenden.",
-          login: "Anmelden",
           register: "Registrieren",
           homeText: [
             {
@@ -107,6 +120,21 @@ i18n
               ],
             },
           ],
+
+          supportTitle: "Unterstützung",
+          name: "Name",
+          email: "Email",
+          subject: "Betreff",
+          message: "Nachricht",
+          send: "Senden",
+          supportSuccess: "Ihre Nachricht wurde erfolgreich gesendet!",
+          supportError:
+            "Beim Senden Ihrer Nachricht ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+          loginTitle: "Anmelden",
+          password: "Passwort",
+          loginButtonText: "Anmelden",
+          googleError:
+            "Google-Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
         },
       },
     },
