@@ -26,6 +26,7 @@ interface ProductRegistrationDialogProps {
   open: boolean;
   spaceId: string;
   spaceName: string;
+  defaultBox?: string;
   onClose: () => void;
   onSave: (data: IItem) => void;
 }
@@ -34,6 +35,7 @@ export default function ProductRegistrationDialog({
   open,
   spaceId,
   spaceName,
+  defaultBox,
   onClose,
   onSave,
 }: ProductRegistrationDialogProps) {
@@ -70,7 +72,7 @@ export default function ProductRegistrationDialog({
       if (!savedProduct._id) {
         console.error("❌ CRITICAL: No ID found in product!", backendProduct);
         alert(
-          "Warning: Product was created but no ID was returned. Edit/Delete may not work."
+          "Warning: Product was created but no ID was returned. Edit/Delete may not work.",
         );
       }
 
@@ -84,11 +86,12 @@ export default function ProductRegistrationDialog({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Register New Product in {spaceName}</DialogTitle>
+      <DialogTitle>Register New Box in {spaceName}</DialogTitle>
       <DialogContent>
         <ProductRegistrationForm
           spaceId={spaceId}
           spaceName={spaceName}
+          defaultBox={defaultBox}
           onSubmit={handleSubmit}
           onCancel={onClose}
         />

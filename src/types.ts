@@ -22,7 +22,7 @@ export interface IUser {
 } */
 
 export interface IItem {
-  _id?: string; 
+  _id?: string;
   name: string;
   desc?: string;
   box?: string;
@@ -40,7 +40,7 @@ export interface IItem {
 // ✅ For clickable images
 export interface IImageData {
   id: string;
-  image: string; 
+  image: string;
   alt: string;
   link?: string;
 }
@@ -57,7 +57,7 @@ export interface ClickableImageItem {
 }
 export interface IRoom {
   id: string;
-  dbId?: string; 
+  dbId?: string;
   image?: string;
   alt: string;
 }
@@ -156,4 +156,18 @@ export interface CollaboratorInfo {
   id: string;
   username: string;
   email: string;
+}
+
+// Add this to your existing types file alongside IRoom and IItem
+
+export interface IBox {
+  id?: string;
+  _id?: string; // frontend-transformed version of id
+  name: string;
+  desc?: string;
+  icon?: string; // emoji icon
+  color?: string; // hex color for the card accent
+  parentId: string; // room id this box belongs to
+  createdAt?: string;
+  updatedAt?: string;
 }

@@ -41,6 +41,54 @@ export const useSpaceOperations = (onSuccess?: () => void) => {
     }
   };
 
+  const deleteSpace = async (space: IRoom): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Use dbId if available (original db id), otherwise fall back to id
+      const targetId = space.dbId ?? space.id;
+
+      // 1. Delete all boxes belonging to this space
+      const boxesRes = await fetch(`${API_BASE}/boxes?parentId=${targetId}`);
+      if (boxesRes.ok) {
+        const boxes: { id: string }[] = await boxesRes.json();
+        await Promise.all(
+          boxes.map((box) =>
+            fetch(`${API_BASE}/boxes/${box.id}`, { method: "DELETE" })
+          )
+        );
+      }
+
+      // 2. Delete all items belonging to this space
+      const itemsRes = await fetch(`${API_BASE}/items?parentId=${targetId}`);
+      if (itemsRes.ok) {
+        const items: { id: string }[] = await itemsRes.json();
+        await Promise.all(
+          items.map((item) =>
+            fetch(`${API_BASE}/items/${item.id}`, { method: "DELETE" })
+          )
+        );
+      }
+
+      // 3. Delete the space itself
+      const res = await fetch(`${API_BASE}/spaces/${targetId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete space");
+
+      onSuccess?.();
+      return true;
+    } catch (err) {
+      console.error("Error deleting space:", err);
+      setError("Failed to delete space");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateSpaceImage = async (
     spaceId: string,
     image: string
@@ -96,6 +144,7 @@ export const useSpaceOperations = (onSuccess?: () => void) => {
 
   return {
     createSpace,
+    deleteSpace,
     updateSpaceImage,
     createProduct,
     loading,

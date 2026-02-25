@@ -13,6 +13,7 @@ import { type IItem } from "../../types";
 interface ProductRegistrationFormProps {
   spaceId: string;
   spaceName: string;
+  defaultBox?: string;
   onSubmit: (productData: Partial<IItem>) => void;
   onCancel: () => void;
 }
@@ -20,13 +21,14 @@ interface ProductRegistrationFormProps {
 export default function ProductRegistrationForm({
   spaceId,
   spaceName,
+  defaultBox,
   onSubmit,
   onCancel,
 }: ProductRegistrationFormProps) {
   const [formData, setFormData] = useState<Partial<IItem>>({
     name: "",
     desc: "",
-    box: spaceId,
+    box: defaultBox ?? spaceId,
     parentId: "",
     image: "",
     collaborators: [],
@@ -37,7 +39,7 @@ export default function ProductRegistrationForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -97,15 +99,13 @@ export default function ProductRegistrationForm({
     e.preventDefault();
     if (!formData.name?.trim()) return;
 
-    // DO NOT include _id here - let the backend generate it
     const productData: Partial<IItem> = {
       ...formData,
       name: formData.name.trim(),
-      box: spaceId,
+      box: formData.box || spaceId,
       parentId: formData.parentId || spaceId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      // Remove empty strings and empty arrays
       desc: formData.desc?.trim() || undefined,
       image: formData.image?.trim() || undefined,
       collaborators: formData.collaborators?.length
@@ -127,7 +127,7 @@ export default function ProductRegistrationForm({
 
       <TextField
         fullWidth
-        label="Product Name *"
+        label="Box Name *"
         name="name"
         value={formData.name}
         onChange={handleChange}
