@@ -1,6 +1,6 @@
 import React from "react";
 import { Grid } from "@mui/material";
-import { type IRoom, type IItem } from "../../types";
+import { type IRoom, type IBox } from "../../types";
 import { SpacesCard } from "./SpacesCard";
 
 interface SpacesGridProps {
@@ -8,7 +8,8 @@ interface SpacesGridProps {
   selectedSpaceId: string | null;
   onSpaceClick: (spaceId: string) => void;
   onImageEdit: (space: IRoom) => void;
-  productsBySpace: Record<string, IItem[]>;
+  onDelete: (space: IRoom) => void;
+  boxesBySpace: Record<string, IBox[]>;
 }
 
 export const SpacesGrid: React.FC<SpacesGridProps> = ({
@@ -16,7 +17,8 @@ export const SpacesGrid: React.FC<SpacesGridProps> = ({
   selectedSpaceId,
   onSpaceClick,
   onImageEdit,
-  productsBySpace,
+  onDelete,
+  boxesBySpace = {},
 }) => {
   return (
     <Grid
@@ -38,9 +40,14 @@ export const SpacesGrid: React.FC<SpacesGridProps> = ({
           <SpacesCard
             space={space}
             isSelected={space.id === selectedSpaceId}
-            productCount={productsBySpace[space.id]?.length || 0}
+            boxCount={
+              boxesBySpace[space.id]?.length ??
+              boxesBySpace[space.dbId ?? ""]?.length ??
+              0
+            }
             onCardClick={onSpaceClick}
             onImageEdit={onImageEdit}
+            onDelete={onDelete}
           />
         </Grid>
       ))}
