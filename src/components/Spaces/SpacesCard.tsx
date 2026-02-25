@@ -8,21 +8,24 @@ import { IconButton } from "@mui/material";
 import Add from "../../assets/icons/add.png";
 import { type IRoom } from "../../types";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface SpaceCardProps {
   space: IRoom;
   isSelected: boolean;
-  productCount: number;
+  boxCount: number;
   onCardClick: (spaceId: string) => void;
   onImageEdit: (space: IRoom) => void;
+  onDelete: (space: IRoom) => void;
 }
 
 export const SpacesCard: React.FC<SpaceCardProps> = ({
   space,
   isSelected,
-  productCount,
+  boxCount,
   onCardClick,
   onImageEdit,
+  onDelete,
 }) => {
   return (
     <Card
@@ -64,26 +67,29 @@ export const SpacesCard: React.FC<SpaceCardProps> = ({
               width: "18vw",
               borderRadius: 8,
               overflowWrap: "anywhere",
-
               "&:hover": {
                 opacity: 0.8,
                 transform: "scale(1.05)",
                 transition: "transform 0.3s",
               },
-              "@media (max-width: 1256px)": {
-                width: "35vw",
-              },
-              "@media (max-width: 455px)": {
-                width: "85vw",
-              },
+              "@media (max-width: 1256px)": { width: "35vw" },
+              "@media (max-width: 455px)": { width: "85vw" },
             }}
           >
             <img src={space.image || Add} loading="lazy" alt={space.alt} />
           </AspectRatio>
         </CardOverflow>
 
-        {/* TITLE */}
-        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+        {/* TITLE + ACTIONS */}
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            alignItems: "center",
+            flexGrow: 1,
+            justifyContent: "space-between",
+          }}
+        >
           <Typography
             textColor="#4F4F4F"
             sx={{
@@ -97,27 +103,42 @@ export const SpacesCard: React.FC<SpaceCardProps> = ({
             {space.alt}
           </Typography>
 
-          {/* EDIT BUTTON */}
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              onImageEdit(space);
-            }}
-            sx={{
-              color: "#4F4F4F",
-              alignSelf: "flex-start",
-              "&:hover": {
-                bgcolor: "rgba(255, 255, 255, 0.1)",
-              },
-            }}
-          >
-            <EditIcon />
-          </IconButton>
+          <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onImageEdit(space);
+              }}
+              sx={{
+                color: "#4F4F4F",
+                alignSelf: "flex-start",
+                "&:hover": { bgcolor: "rgba(0,0,0,0.06)" },
+              }}
+              title="Edit image"
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(space);
+              }}
+              sx={{
+                color: "#c0392b",
+                alignSelf: "flex-start",
+                "&:hover": { bgcolor: "rgba(192,57,43,0.08)" },
+              }}
+              title="Delete space"
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
         </Box>
       </CardContent>
 
-      {/* SIDE / BOTTOM OVERFLOW */}
+      {/* SIDE / BOTTOM OVERFLOW — box count */}
       {space.id !== "Create new room" && (
         <CardOverflow
           variant="soft"
@@ -135,7 +156,6 @@ export const SpacesCard: React.FC<SpaceCardProps> = ({
             textTransform: "uppercase",
             borderLeft: "1px solid",
             borderColor: "rgba(99, 107, 116, 0.2)",
-
             "@media (max-width: 635px)": {
               writingMode: "horizontal-tb",
               borderLeft: "none",
@@ -146,7 +166,7 @@ export const SpacesCard: React.FC<SpaceCardProps> = ({
             },
           }}
         >
-          {productCount} {productCount > 1 ? "products" : "product"}
+          {boxCount} {boxCount === 1 ? "box" : "boxes"}
         </CardOverflow>
       )}
     </Card>
