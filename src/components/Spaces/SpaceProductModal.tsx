@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Button,
   Typography,
@@ -12,10 +12,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Chip,
   Stack,
   Snackbar,
   Alert,
+  Badge,
+  Skeleton,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -23,9 +24,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import QRCodeIcon from "@mui/icons-material/QrCode";
 import PeopleIcon from "@mui/icons-material/People";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import { type IRoom, type IItem } from "../../types";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import AddIcon from "@mui/icons-material/Add";
+import { type IRoom, type IItem, type IBox } from "../../types";
 import ProductRegistrationDialog from "./ProductRegistrationDialog";
 import ProductEditDialog from "./ProductEditDialog";
+import CreateBoxDialog from "./CreateBoxDialog";
 
 interface SpaceProductsModalProps {
   open: boolean;
@@ -45,40 +49,71 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
 }) => {
   const [openProductDialog, setOpenProductDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openCreateBoxDialog, setOpenCreateBoxDialog] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<IItem | null>(null);
   const [productToEdit, setProductToEdit] = useState<IItem | null>(null);
+  const [selectedBox, setSelectedBox] = useState<IBox | null>(null);
+
+  const [boxes, setBoxes] = useState<IBox[]>([]);
+  const [boxesLoading, setBoxesLoading] = useState(false);
+
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
     severity: "success" | "error";
-  }>({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  }>({ open: false, message: "", severity: "success" });
 
-  // Close all dialogs when main modal closes
-  React.useEffect(() => {
+  // ── Fetch boxes for this space ──────────────────────────────────────────────
+  const fetchBoxes = useCallback(async () => {
+    if (!space?.id) return;
+    setBoxesLoading(true);
+    try {
+      const res = await fetch(
+        `http://localhost:3000/boxes?parentId=${space.id}`,
+      );
+      if (!res.ok) throw new Error("Failed to fetch boxes");
+      const data: IBox[] = await res.json();
+      setBoxes(data.map((b) => ({ ...b, _id: b.id })));
+    } catch (err) {
+      console.error("❌ Error fetching boxes:", err);
+      showSnackbar("Failed to load boxes.", "error");
+    } finally {
+      setBoxesLoading(false);
+    }
+  }, [space?.id]);
+
+  useEffect(() => {
+    if (open) fetchBoxes();
+  }, [open, fetchBoxes]);
+
+  useEffect(() => {
     if (!open) {
       setOpenProductDialog(false);
       setOpenEditDialog(false);
+      setOpenCreateBoxDialog(false);
       setDeleteDialogOpen(false);
       setProductToDelete(null);
       setProductToEdit(null);
+      setSelectedBox(null);
+      setBoxes([]);
     }
   }, [open]);
 
-  const handleAddProductClick = () => {
-    setOpenProductDialog(true);
+  const selectedBoxProducts = selectedBox
+    ? products.filter(
+        (p) => p.box === selectedBox.id || p.box === selectedBox._id,
+      )
+    : [];
+
+  // ── Handlers ────────────────────────────────────────────────────────────────
+  const handleBoxCreated = (box: IBox) => {
+    setBoxes((prev) => [...prev, box]);
+    showSnackbar(`Box "${box.name}" created!`, "success");
   };
 
   const handleEditClick = (product: IItem) => {
-    console.log("🔄 Edit clicked for product:", product);
-    console.log("📋 Product ID:", product._id);
-
     if (!product._id) {
-      console.error("❌ Product _id is undefined!", product);
       showSnackbar("Cannot edit product: Missing product ID", "error");
       return;
     }
@@ -86,11 +121,7 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
     setOpenEditDialog(true);
   };
 
-  const handleProductSave = (savedProduct: IItem) => {
-    console.log("💾 Handling saved product in modal:", savedProduct);
-    console.log("🆔 Saved product has ID:", !!savedProduct._id);
-
-    // The onRefresh() will trigger the useSpaces hook to refetch all data
+  const handleProductSave = (_savedProduct: IItem) => {
     onRefresh();
     setOpenProductDialog(false);
     showSnackbar("Product added successfully!", "success");
@@ -103,21 +134,8 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
     showSnackbar("Product updated successfully!", "success");
   };
 
-  const handleProductDialogClose = () => {
-    setOpenProductDialog(false);
-  };
-
-  const handleEditDialogClose = () => {
-    setOpenEditDialog(false);
-    setProductToEdit(null);
-  };
-
   const handleDeleteClick = (product: IItem) => {
-    console.log("🗑️ Delete clicked for product:", product);
-    console.log("📋 Product ID:", product._id);
-
     if (!product._id) {
-      console.error("❌ Product _id is undefined!", product);
       showSnackbar("Cannot delete product: Missing product ID", "error");
       return;
     }
@@ -126,31 +144,16 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
   };
 
   const handleConfirmDelete = async () => {
-    if (!productToDelete?._id) {
-      showSnackbar("Cannot delete product: Missing product ID", "error");
-      return;
-    }
-
+    if (!productToDelete?._id) return;
     try {
-      console.log("🚀 Deleting product with ID:", productToDelete._id);
-
       const res = await fetch(
         `http://localhost:3000/items/${productToDelete._id}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+          headers: { "Content-Type": "application/json" },
+        },
       );
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("❌ Delete failed:", res.status, errorText);
-        throw new Error(`Failed to delete product: ${res.status} ${errorText}`);
-      }
-
-      console.log("✅ Product deleted successfully");
+      if (!res.ok) throw new Error(`${res.status}`);
       onRefresh();
       setDeleteDialogOpen(false);
       setProductToDelete(null);
@@ -161,38 +164,27 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
     }
   };
 
-  const handleCancelDelete = () => {
-    setDeleteDialogOpen(false);
-    setProductToDelete(null);
-  };
+  const showSnackbar = (message: string, severity: "success" | "error") =>
+    setSnackbar({ open: true, message, severity });
 
-  const showSnackbar = (message: string, severity: "success" | "error") => {
-    setSnackbar({
-      open: true,
-      message,
-      severity,
-    });
-  };
+  const handleCloseSnackbar = () => setSnackbar((s) => ({ ...s, open: false }));
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  // Format date for display
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Unknown date";
     return new Date(dateString).toLocaleDateString();
   };
 
-  // Determine if we should show the main modal
   const showMainModal =
-    open && !deleteDialogOpen && !openEditDialog && !openProductDialog;
+    open &&
+    !deleteDialogOpen &&
+    !openEditDialog &&
+    !openProductDialog &&
+    !openCreateBoxDialog;
 
   if (!open) return null;
 
   return (
     <>
-      {/* Main Box Modal - Only show when no dialogs are open */}
       {showMainModal && (
         <section className="modal-overlay" onClick={onClose}>
           <div className="wood-box" onClick={(e) => e.stopPropagation()}>
@@ -202,6 +194,7 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
             <div className="box-lid box-lid-right"></div>
             <div className="box-lid box-lid-front"></div>
             <div className="box-content">
+              {/* ── Header ── */}
               <Box
                 sx={{
                   display: "flex",
@@ -210,212 +203,351 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                   mb: 2,
                 }}
               >
-                <Typography variant="h5" component="h2" color="#F5F5DC">
-                  {space?.alt || ""}
-                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  {selectedBox && (
+                    <IconButton
+                      onClick={() => setSelectedBox(null)}
+                      sx={{ color: "#F5F5DC", p: 0.5 }}
+                      title="Back to boxes"
+                    >
+                      <ArrowBackIcon />
+                    </IconButton>
+                  )}
+                  {selectedBox ? (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: "50%",
+                          background: selectedBox.color ?? "#D97706",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 16,
+                        }}
+                      >
+                        {selectedBox.icon ?? "📦"}
+                      </Box>
+                      <Typography variant="h5" component="h2" color="#F5F5DC">
+                        {selectedBox.name}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography variant="h5" component="h2" color="#F5F5DC">
+                      {space?.alt || ""}
+                    </Typography>
+                  )}
+                </Box>
                 <IconButton
                   aria-label="close"
                   onClick={onClose}
                   sx={{
                     color: "#F5F5DC",
-                    "&:hover": {
-                      backgroundColor: "rgba(245, 245, 220, 0.1)",
-                    },
+                    "&:hover": { backgroundColor: "rgba(245,245,220,0.1)" },
                   }}
                 >
                   <CloseIcon />
                 </IconButton>
               </Box>
 
+              {/* ── Subtitle ── */}
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="#F5F5DC">
-                  Products found: {products.length}
+                  {selectedBox
+                    ? `${selectedBoxProducts.length} product${selectedBoxProducts.length !== 1 ? "s" : ""} in this box`
+                    : `${boxes.length} box${boxes.length !== 1 ? "es" : ""} · ${products.length} total product${products.length !== 1 ? "s" : ""}`}
                 </Typography>
               </Box>
 
-              {/* Products grid */}
-              <Box sx={{ maxHeight: "400px", overflow: "auto", mb: 2 }}>
-                <Grid
-                  container
-                  spacing={2}
-                  sx={{
-                    "@media (max-width: 576px)": {
-                      flexDirection: "column",
-                    },
-                  }}
-                >
-                  {products.map((product) => (
-                    <Grid
-                      key={product._id || `no-id-${product.name}`}
-                      size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-                    >
-                      <Card
-                        sx={{
-                          position: "relative",
-                          height: "100%",
-                          display: "flex",
-                          flexDirection: "column",
-                          "&:hover .action-button": {
-                            opacity: 1,
-                          },
-                          border: !product._id ? "2px solid red" : "none",
-                        }}
-                      >
-                        {/* Action buttons */}
-                        <Box
-                          sx={{
-                            position: "absolute",
-                            top: 8,
-                            right: 8,
-                            display: "flex",
-                            gap: 0.5,
-                            zIndex: 1,
-                          }}
-                        >
-                          {/* Edit button */}
-                          <IconButton
-                            className="action-button"
-                            onClick={() => handleEditClick(product)}
-                            disabled={!product._id}
+              {/* ══════════════════════════════════════════
+                  BOX LIST VIEW
+              ══════════════════════════════════════════ */}
+              {!selectedBox && (
+                <Box sx={{ maxHeight: "400px", overflow: "auto", mb: 2 }}>
+                  <Grid container spacing={2}>
+                    {/* Loading skeletons */}
+                    {boxesLoading &&
+                      [1, 2, 3].map((n) => (
+                        <Grid key={n} size={{ xs: 12, sm: 6, md: 4 }}>
+                          <Skeleton
+                            variant="rounded"
+                            height={140}
                             sx={{
-                              backgroundColor: "rgba(255, 255, 255, 0.9)",
-                              opacity: product._id ? 0.7 : 0.3,
-                              transition: "opacity 0.2s",
-                              "&:hover": {
-                                backgroundColor: product._id
-                                  ? "#e3f2fd"
-                                  : "rgba(255, 255, 255, 0.9)",
-                                opacity: product._id ? 1 : 0.3,
-                              },
+                              borderRadius: 2,
+                              bgcolor: "rgba(255,255,255,0.08)",
                             }}
-                            title={
-                              product._id
-                                ? "Edit product"
-                                : "Cannot edit - missing ID"
-                            }
-                          >
-                            <EditIcon
-                              color={product._id ? "primary" : "disabled"}
-                              fontSize="small"
-                            />
-                          </IconButton>
-
-                          {/* Delete button */}
-                          <IconButton
-                            className="action-button"
-                            onClick={() => handleDeleteClick(product)}
-                            disabled={!product._id}
-                            sx={{
-                              backgroundColor: "rgba(255, 255, 255, 0.9)",
-                              opacity: product._id ? 0.7 : 0.3,
-                              transition: "opacity 0.2s",
-                              "&:hover": {
-                                backgroundColor: product._id
-                                  ? "#ffebee"
-                                  : "rgba(255, 255, 255, 0.9)",
-                                opacity: product._id ? 1 : 0.3,
-                              },
-                            }}
-                            title={
-                              product._id
-                                ? "Delete product"
-                                : "Cannot delete - missing ID"
-                            }
-                          >
-                            <DeleteIcon
-                              color={product._id ? "error" : "disabled"}
-                              fontSize="small"
-                            />
-                          </IconButton>
-                        </Box>
-
-                        {product.image && (
-                          <CardMedia
-                            component="img"
-                            height="140"
-                            image={product.image}
-                            alt={product.name}
-                            sx={{ objectFit: "cover" }}
                           />
-                        )}
+                        </Grid>
+                      ))}
 
-                        <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                          <Typography
-                            variant="h6"
-                            component="h3"
-                            sx={{ pr: 8, mb: 1 }}
+                    {/* Box cards */}
+                    {!boxesLoading &&
+                      boxes.map((box) => {
+                        const itemCount = products.filter(
+                          (p) => p.box === box.id || p.box === box._id,
+                        ).length;
+                        return (
+                          <Grid
+                            key={box.id ?? box._id}
+                            size={{ xs: 12, sm: 6, md: 4 }}
                           >
-                            {product.name}
-                            {!product._id && (
-                              <Typography
-                                variant="caption"
-                                color="error"
-                                sx={{ ml: 1 }}
-                              >
-                                (No ID)
-                              </Typography>
-                            )}
-                          </Typography>
-
-                          {product.desc && (
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ mb: 2 }}
+                            <Card
+                              onClick={() => setSelectedBox(box)}
+                              sx={{
+                                cursor: "pointer",
+                                height: "100%",
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                py: 3,
+                                px: 2,
+                                background:
+                                  "linear-gradient(135deg, #5C3A1E 0%, #3E2310 100%)",
+                                border: `2px solid ${box.color ?? "#8B5E3C"}`,
+                                borderRadius: 2,
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                  boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                                  transform: "translateY(-3px)",
+                                  filter: "brightness(1.1)",
+                                },
+                              }}
                             >
-                              {product.desc}
-                            </Typography>
-                          )}
-
-                          {/* Additional product information */}
-                          <Stack spacing={1} sx={{ mt: "auto" }}>
-                            {/* Box location */}
-                            {product.box && (
-                              <Chip
-                                label={`Box: ${product.box}`}
-                                size="small"
-                                variant="outlined"
-                                sx={{ fontSize: "0.7rem" }}
-                              />
-                            )}
-
-                            {/* ID display for debugging */}
-                            {product._id && (
+                              <Badge
+                                badgeContent={itemCount}
+                                color="warning"
+                                sx={{ mb: 1.5 }}
+                              >
+                                <Box
+                                  sx={{
+                                    width: 56,
+                                    height: 56,
+                                    borderRadius: "50%",
+                                    background: box.color ?? "#D97706",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: 28,
+                                  }}
+                                >
+                                  {box.icon ?? "📦"}
+                                </Box>
+                              </Badge>
                               <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{
-                                  fontFamily: "monospace",
-                                  fontSize: "0.6rem",
-                                  wordBreak: "break-all",
-                                }}
+                                variant="subtitle1"
+                                fontWeight={700}
+                                color="#F5F5DC"
+                                textAlign="center"
+                                sx={{ wordBreak: "break-word", mt: 0.5 }}
                               >
-                                ID: {product._id}
+                                {box.name}
                               </Typography>
-                            )}
-
-                            {/* QR Code indicator */}
-                            {product.qrCode && (
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 0.5,
-                                }}
-                              >
-                                <QRCodeIcon fontSize="small" color="action" />
+                              {box.desc && (
                                 <Typography
                                   variant="caption"
-                                  color="text.secondary"
+                                  color="#A07850"
+                                  textAlign="center"
+                                  sx={{ mt: 0.25, px: 1 }}
                                 >
-                                  QR Code Available
+                                  {box.desc}
                                 </Typography>
-                              </Box>
+                              )}
+                              <Typography
+                                variant="caption"
+                                color="#A07850"
+                                sx={{ mt: 0.5 }}
+                              >
+                                {itemCount} item{itemCount !== 1 ? "s" : ""}
+                              </Typography>
+                            </Card>
+                          </Grid>
+                        );
+                      })}
+
+                    {/* Create new box card */}
+                    {!boxesLoading && (
+                      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Card
+                          onClick={() => setOpenCreateBoxDialog(true)}
+                          sx={{
+                            cursor: "pointer",
+                            height: "100%",
+                            minHeight: 140,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            py: 3,
+                            px: 2,
+                            background: "transparent",
+                            border: "2px dashed #FFA500",
+                            borderRadius: 2,
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                              background: "rgba(255,165,0,0.08)",
+                              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+                              transform: "translateY(-3px)",
+                            },
+                          }}
+                        >
+                          <AddIcon
+                            sx={{ fontSize: 36, color: "#FFA500", mb: 1 }}
+                          />
+                          <Typography
+                            variant="subtitle2"
+                            color="#FFA500"
+                            fontWeight={700}
+                          >
+                            New Box
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            color="#A07850"
+                            textAlign="center"
+                          >
+                            Create a new container
+                          </Typography>
+                        </Card>
+                      </Grid>
+                    )}
+                  </Grid>
+
+                  {/* Empty state */}
+                  {!boxesLoading && boxes.length === 0 && (
+                    <Box sx={{ textAlign: "center", py: 6 }}>
+                      <Typography fontSize={56}>📦</Typography>
+                      <Typography
+                        variant="body1"
+                        color="#F5F5DC"
+                        sx={{ mt: 1 }}
+                      >
+                        No boxes yet in this space.
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="#A07850"
+                        sx={{ mt: 0.5 }}
+                      >
+                        Create a box to start organising your products.
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              )}
+
+              {/* ══════════════════════════════════════════
+                  PRODUCTS INSIDE A BOX VIEW
+              ══════════════════════════════════════════ */}
+              {selectedBox && (
+                <Box sx={{ maxHeight: "400px", overflow: "auto", mb: 2 }}>
+                  <Grid container spacing={2}>
+                    {selectedBoxProducts.map((product) => (
+                      <Grid
+                        key={product._id || `no-id-${product.name}`}
+                        size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                      >
+                        <Card
+                          sx={{
+                            position: "relative",
+                            height: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                            "&:hover .action-button": { opacity: 1 },
+                            border: !product._id ? "2px solid red" : "none",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: 8,
+                              right: 8,
+                              display: "flex",
+                              gap: 0.5,
+                              zIndex: 1,
+                            }}
+                          >
+                            <IconButton
+                              className="action-button"
+                              onClick={() => handleEditClick(product)}
+                              disabled={!product._id}
+                              sx={{
+                                backgroundColor: "rgba(255,255,255,0.9)",
+                                opacity: product._id ? 0.7 : 0.3,
+                                transition: "opacity 0.2s",
+                                "&:hover": {
+                                  backgroundColor: "#e3f2fd",
+                                  opacity: 1,
+                                },
+                              }}
+                            >
+                              <EditIcon
+                                color={product._id ? "primary" : "disabled"}
+                                fontSize="small"
+                              />
+                            </IconButton>
+                            <IconButton
+                              className="action-button"
+                              onClick={() => handleDeleteClick(product)}
+                              disabled={!product._id}
+                              sx={{
+                                backgroundColor: "rgba(255,255,255,0.9)",
+                                opacity: product._id ? 0.7 : 0.3,
+                                transition: "opacity 0.2s",
+                                "&:hover": {
+                                  backgroundColor: "#ffebee",
+                                  opacity: 1,
+                                },
+                              }}
+                            >
+                              <DeleteIcon
+                                color={product._id ? "error" : "disabled"}
+                                fontSize="small"
+                              />
+                            </IconButton>
+                          </Box>
+
+                          {product.image && (
+                            <CardMedia
+                              component="img"
+                              height="140"
+                              image={product.image}
+                              alt={product.name}
+                              sx={{ objectFit: "cover" }}
+                            />
+                          )}
+
+                          <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                            <Typography
+                              variant="h6"
+                              component="h3"
+                              sx={{ pr: 8, mb: 1 }}
+                            >
+                              {product.name}
+                              {!product._id && (
+                                <Typography
+                                  variant="caption"
+                                  color="error"
+                                  sx={{ ml: 1 }}
+                                >
+                                  (No ID)
+                                </Typography>
+                              )}
+                            </Typography>
+
+                            {product.desc && (
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ mb: 2 }}
+                              >
+                                {product.desc}
+                              </Typography>
                             )}
 
-                            {/* Collaborators */}
-                            {product.collaborators &&
-                              product.collaborators.length > 0 && (
+                            <Stack spacing={1} sx={{ mt: "auto" }}>
+                              {product.qrCode && (
                                 <Box
                                   sx={{
                                     display: "flex",
@@ -423,44 +555,41 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                                     gap: 0.5,
                                   }}
                                 >
-                                  <PeopleIcon fontSize="small" color="action" />
+                                  <QRCodeIcon fontSize="small" color="action" />
                                   <Typography
                                     variant="caption"
                                     color="text.secondary"
                                   >
-                                    {product.collaborators.length} collaborator
-                                    {product.collaborators.length !== 1
-                                      ? "s"
-                                      : ""}
+                                    QR Code Available
                                   </Typography>
                                 </Box>
                               )}
-
-                            {/* Creation date */}
-                            {product.createdAt && (
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 0.5,
-                                }}
-                              >
-                                <CalendarTodayIcon
-                                  fontSize="small"
-                                  color="action"
-                                />
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                >
-                                  Added: {formatDate(product.createdAt)}
-                                </Typography>
-                              </Box>
-                            )}
-
-                            {/* Last updated */}
-                            {product.updatedAt &&
-                              product.updatedAt !== product.createdAt && (
+                              {product.collaborators &&
+                                product.collaborators.length > 0 && (
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 0.5,
+                                    }}
+                                  >
+                                    <PeopleIcon
+                                      fontSize="small"
+                                      color="action"
+                                    />
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                    >
+                                      {product.collaborators.length}{" "}
+                                      collaborator
+                                      {product.collaborators.length !== 1
+                                        ? "s"
+                                        : ""}
+                                    </Typography>
+                                  </Box>
+                                )}
+                              {product.createdAt && (
                                 <Box
                                   sx={{
                                     display: "flex",
@@ -476,29 +605,98 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                                     variant="caption"
                                     color="text.secondary"
                                   >
-                                    Updated: {formatDate(product.updatedAt)}
+                                    Added: {formatDate(product.createdAt)}
                                   </Typography>
                                 </Box>
                               )}
-                          </Stack>
-                        </CardContent>
+                              {product.updatedAt &&
+                                product.updatedAt !== product.createdAt && (
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 0.5,
+                                    }}
+                                  >
+                                    <CalendarTodayIcon
+                                      fontSize="small"
+                                      color="action"
+                                    />
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                    >
+                                      Updated: {formatDate(product.updatedAt)}
+                                    </Typography>
+                                  </Box>
+                                )}
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+
+                    {/* Add product card */}
+                    <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                      <Card
+                        onClick={() => setOpenProductDialog(true)}
+                        sx={{
+                          cursor: "pointer",
+                          height: "100%",
+                          minHeight: 160,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: "transparent",
+                          border: `2px dashed ${selectedBox.color ?? "#FFA500"}`,
+                          borderRadius: 2,
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            background: `${selectedBox.color ?? "#FFA500"}11`,
+                            transform: "translateY(-2px)",
+                          },
+                        }}
+                      >
+                        <AddIcon
+                          sx={{
+                            fontSize: 32,
+                            color: selectedBox.color ?? "#FFA500",
+                            mb: 1,
+                          }}
+                        />
+                        <Typography
+                          variant="body2"
+                          color={selectedBox.color ?? "#FFA500"}
+                          fontWeight={700}
+                        >
+                          Add Product
+                        </Typography>
                       </Card>
                     </Grid>
-                  ))}
-                </Grid>
+                  </Grid>
 
-                {products.length === 0 && (
-                  <Box sx={{ textAlign: "center", py: 4 }}>
-                    <Typography variant="body1" color="#F5F5DC">
-                      No products in this space yet.
-                    </Typography>
-                    <Typography variant="body2" color="#F5F5DC" sx={{ mt: 1 }}>
-                      Add your first product using the button below.
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
+                  {selectedBoxProducts.length === 0 && (
+                    <Box sx={{ textAlign: "center", py: 4 }}>
+                      <Typography fontSize={40}>
+                        {selectedBox.icon ?? "📦"}
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        color="#F5F5DC"
+                        sx={{ mt: 1 }}
+                      >
+                        No products in this box yet.
+                      </Typography>
+                      <Typography variant="body2" color="#A07850">
+                        Click "Add Product" to get started.
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              )}
 
+              {/* ── Footer ── */}
               <Box
                 sx={{
                   display: "flex",
@@ -506,58 +704,99 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                   gap: 1,
                   pt: 2,
                   borderTop: "1px solid #FFA500",
-                  "@media (max-width: 576px)": {
-                    justifyContent: "center",
-                  },
+                  "@media (max-width: 576px)": { justifyContent: "center" },
                 }}
               >
                 <Button
-                  onClick={onRefresh}
+                  onClick={() => {
+                    onRefresh();
+                    fetchBoxes();
+                  }}
                   variant="outlined"
                   sx={{ color: "#FFA500", borderColor: "#FFA500" }}
                 >
                   Refresh
                 </Button>
-                <Button
-                  onClick={handleAddProductClick}
-                  variant="contained"
-                  sx={{ backgroundColor: "#FFA500", color: "#391D07" }}
-                >
-                  Add Product
-                </Button>
+                {selectedBox && (
+                  <Button
+                    onClick={() => setSelectedBox(null)}
+                    variant="outlined"
+                    startIcon={<ArrowBackIcon />}
+                    sx={{ color: "#F5F5DC", borderColor: "#8B5E3C" }}
+                  >
+                    All Boxes
+                  </Button>
+                )}
+                {selectedBox ? (
+                  <Button
+                    onClick={() => setOpenProductDialog(true)}
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    sx={{
+                      background: selectedBox.color ?? "#FFA500",
+                      color: "#fff",
+                    }}
+                  >
+                    Add Product
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => setOpenCreateBoxDialog(true)}
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    sx={{ backgroundColor: "#FFA500", color: "#391D07" }}
+                  >
+                    New Box
+                  </Button>
+                )}
               </Box>
             </div>
           </div>
         </section>
       )}
 
-      {/* Product Registration Dialog */}
+      {/* ── Create Box Dialog ── */}
+      <CreateBoxDialog
+        open={openCreateBoxDialog}
+        spaceId={space?.id || ""}
+        spaceName={space?.alt || ""}
+        onClose={() => setOpenCreateBoxDialog(false)}
+        onSave={handleBoxCreated}
+      />
+
+      {/* ── Product Registration Dialog ── */}
       <ProductRegistrationDialog
         open={openProductDialog}
         spaceId={space?.id || ""}
         spaceName={space?.alt || ""}
-        onClose={handleProductDialogClose}
-        onSave={handleProductSave} // Now this receives the complete product with _id
+        defaultBox={selectedBox?.id ?? undefined}
+        onClose={() => setOpenProductDialog(false)}
+        onSave={handleProductSave}
       />
 
-      {/* Product Edit Dialog */}
+      {/* ── Product Edit Dialog ── */}
       {openEditDialog && productToEdit && (
         <ProductEditDialog
           open={openEditDialog}
           product={productToEdit}
           spaceId={space?.id || ""}
           spaceName={space?.alt || ""}
-          onClose={handleEditDialogClose}
+          onClose={() => {
+            setOpenEditDialog(false);
+            setProductToEdit(null);
+          }}
           onSave={handleProductEditSave}
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
+      {/* ── Delete Confirmation ── */}
       <Dialog
         open={deleteDialogOpen}
-        onClose={handleCancelDelete}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setProductToDelete(null);
+        }}
         aria-labelledby="delete-dialog-title"
-        disableScrollLock={false}
         keepMounted={false}
       >
         <DialogTitle id="delete-dialog-title">Confirm Delete</DialogTitle>
@@ -568,21 +807,17 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
           </Typography>
           {productToDelete?.desc && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Description: {productToDelete.desc}
-            </Typography>
-          )}
-          {productToDelete?._id && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mt: 1, display: "block", fontFamily: "monospace" }}
-            >
-              ID: {productToDelete._id}
+              {productToDelete.desc}
             </Typography>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelDelete} color="primary">
+          <Button
+            onClick={() => {
+              setDeleteDialogOpen(false);
+              setProductToDelete(null);
+            }}
+          >
             Cancel
           </Button>
           <Button
@@ -596,7 +831,7 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar for notifications */}
+      {/* ── Snackbar ── */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
