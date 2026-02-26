@@ -7,20 +7,7 @@ import {
 } from "@mui/material";
 import ProductRegistrationForm from "./ProductRegistrationForm";
 import { type IItem } from "../../types";
-
-// Define the backend response type
-interface BackendProductResponse {
-  id: string;
-  name: string;
-  desc?: string;
-  box?: string;
-  parentId?: string;
-  image?: string;
-  collaborators?: string[];
-  qrCode?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { API_BASE, authHeaders } from "../../config/api";
 
 interface ProductRegistrationDialogProps {
   open: boolean;
@@ -41,52 +28,46 @@ export default function ProductRegistrationDialog({
 }: ProductRegistrationDialogProps) {
   const handleSubmit = async (productData: Partial<IItem>) => {
     try {
-      console.log("🚀 Creating product with data:", productData);
-
-      const res = await fetch("http://localhost:3000/items", {
+      const res = await fetch(`${API_BASE}/items`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(productData),
+        headers: authHeaders(),
+        body: JSON.stringify({
+          name: productData.name,
+          desc: productData.desc,
+          // box = the box ObjectId (or spaceId if no box selected)
+          box: productData.box ?? defaultBox ?? spaceId,
+          // parentId = the space ObjectId
+          parentId: spaceId,
+          image: productData.image,
+          collaborators: productData.collaborators,
+        }),
       });
-
-      console.log("📡 Response status:", res.status);
 
       if (!res.ok) {
         const errorText = await res.text();
-        console.error("❌ API Error:", res.status, errorText);
+        console.error("API Error:", res.status, errorText);
         throw new Error(`Failed to save product: ${res.status}`);
       }
 
-      const backendProduct: BackendProductResponse = await res.json();
-      console.log("✅ Raw product from backend:", backendProduct);
-
-      // Transform the backend response to frontend format
+      // MongoDB returns the full document with _id
+      const saved = await res.json();
       const savedProduct: IItem = {
-        ...backendProduct,
-        _id: backendProduct.id, // Transform id to _id
+        ...saved,
+        _id: saved._id?.toString(),
+        id: saved._id?.toString(),
       };
-
-      console.log("🔄 Transformed product:", savedProduct);
-      console.log("🆔 Product _id:", savedProduct._id);
-
-      if (!savedProduct._id) {
-        console.error("❌ CRITICAL: No ID found in product!", backendProduct);
-        alert(
-          "Warning: Product was created but no ID was returned. Edit/Delete may not work.",
-        );
-      }
 
       onSave(savedProduct);
       onClose();
     } catch (err) {
-      console.error("❌ Error saving product:", err);
+      console.error("Error saving product:", err);
       alert("Failed to save product. Please try again.");
     }
   };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Register New Box in {spaceName}</DialogTitle>
+      <DialogTitle>Register New Product in {spaceName}</DialogTitle>
       <DialogContent>
         <ProductRegistrationForm
           spaceId={spaceId}

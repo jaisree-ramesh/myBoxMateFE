@@ -30,6 +30,7 @@ import { type IRoom, type IItem, type IBox } from "../../types";
 import ProductRegistrationDialog from "./ProductRegistrationDialog";
 import ProductEditDialog from "./ProductEditDialog";
 import CreateBoxDialog from "./CreateBoxDialog";
+import { API_BASE, authHeaders } from "../../config/api";
 
 interface SpaceProductsModalProps {
   open: boolean;
@@ -66,22 +67,25 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
 
   // ── Fetch boxes for this space ──────────────────────────────────────────────
   const fetchBoxes = useCallback(async () => {
-    if (!space?.id) return;
+    if (!space?.dbId && !space?.id) return;
     setBoxesLoading(true);
     try {
-      const res = await fetch(
-        `http://localhost:3000/boxes?parentId=${space.id}`,
-      );
+      // Use dbId (real MongoDB ObjectId) for the query
+      const spaceId = space.dbId ?? space.id;
+      const res = await fetch(`${API_BASE}/boxes?parentId=${spaceId}`, {
+        headers: authHeaders(),
+      });
       if (!res.ok) throw new Error("Failed to fetch boxes");
       const data: IBox[] = await res.json();
+      // MongoDB returns id already transformed by the route
       setBoxes(data.map((b) => ({ ...b, _id: b.id })));
     } catch (err) {
-      console.error("❌ Error fetching boxes:", err);
+      console.error("Error fetching boxes:", err);
       showSnackbar("Failed to load boxes.", "error");
     } finally {
       setBoxesLoading(false);
     }
-  }, [space?.id]);
+  }, [space?.dbId, space?.id]);
 
   useEffect(() => {
     if (open) fetchBoxes();
@@ -121,7 +125,7 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
     setOpenEditDialog(true);
   };
 
-  const handleProductSave = (_savedProduct: IItem) => {
+  const handleProductSave = () => {
     onRefresh();
     setOpenProductDialog(false);
     showSnackbar("Product added successfully!", "success");
@@ -146,20 +150,17 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
   const handleConfirmDelete = async () => {
     if (!productToDelete?._id) return;
     try {
-      const res = await fetch(
-        `http://localhost:3000/items/${productToDelete._id}`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      const res = await fetch(`${API_BASE}/items/${productToDelete._id}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
       if (!res.ok) throw new Error(`${res.status}`);
       onRefresh();
       setDeleteDialogOpen(false);
       setProductToDelete(null);
       showSnackbar("Product deleted successfully!", "success");
     } catch (err) {
-      console.error("❌ Error deleting product:", err);
+      console.error("Error deleting product:", err);
       showSnackbar("Failed to delete product. Please try again.", "error");
     }
   };
@@ -260,13 +261,10 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                 </Typography>
               </Box>
 
-              {/* ══════════════════════════════════════════
-                  BOX LIST VIEW
-              ══════════════════════════════════════════ */}
+              {/* ══ BOX LIST VIEW ══ */}
               {!selectedBox && (
                 <Box sx={{ maxHeight: "400px", overflow: "auto", mb: 2 }}>
                   <Grid container spacing={2}>
-                    {/* Loading skeletons */}
                     {boxesLoading &&
                       [1, 2, 3].map((n) => (
                         <Grid key={n} size={{ xs: 12, sm: 6, md: 4 }}>
@@ -281,7 +279,6 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                         </Grid>
                       ))}
 
-                    {/* Box cards */}
                     {!boxesLoading &&
                       boxes.map((box) => {
                         const itemCount = products.filter(
@@ -366,7 +363,6 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                         );
                       })}
 
-                    {/* Create new box card */}
                     {!boxesLoading && (
                       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <Card
@@ -387,7 +383,6 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                             transition: "all 0.2s ease",
                             "&:hover": {
                               background: "rgba(255,165,0,0.08)",
-                              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
                               transform: "translateY(-3px)",
                             },
                           }}
@@ -414,7 +409,6 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                     )}
                   </Grid>
 
-                  {/* Empty state */}
                   {!boxesLoading && boxes.length === 0 && (
                     <Box sx={{ textAlign: "center", py: 6 }}>
                       <Typography fontSize={56}>📦</Typography>
@@ -437,9 +431,7 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                 </Box>
               )}
 
-              {/* ══════════════════════════════════════════
-                  PRODUCTS INSIDE A BOX VIEW
-              ══════════════════════════════════════════ */}
+              {/* ══ PRODUCTS INSIDE A BOX VIEW ══ */}
               {selectedBox && (
                 <Box sx={{ maxHeight: "400px", overflow: "auto", mb: 2 }}>
                   <Grid container spacing={2}>
@@ -455,7 +447,6 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                             display: "flex",
                             flexDirection: "column",
                             "&:hover .action-button": { opacity: 1 },
-                            border: !product._id ? "2px solid red" : "none",
                           }}
                         >
                           <Box
@@ -525,17 +516,7 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                               sx={{ pr: 8, mb: 1 }}
                             >
                               {product.name}
-                              {!product._id && (
-                                <Typography
-                                  variant="caption"
-                                  color="error"
-                                  sx={{ ml: 1 }}
-                                >
-                                  (No ID)
-                                </Typography>
-                              )}
                             </Typography>
-
                             {product.desc && (
                               <Typography
                                 variant="body2"
@@ -545,7 +526,6 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                                 {product.desc}
                               </Typography>
                             )}
-
                             <Stack spacing={1} sx={{ mt: "auto" }}>
                               {product.qrCode && (
                                 <Box
@@ -609,27 +589,6 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
                                   </Typography>
                                 </Box>
                               )}
-                              {product.updatedAt &&
-                                product.updatedAt !== product.createdAt && (
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 0.5,
-                                    }}
-                                  >
-                                    <CalendarTodayIcon
-                                      fontSize="small"
-                                      color="action"
-                                    />
-                                    <Typography
-                                      variant="caption"
-                                      color="text.secondary"
-                                    >
-                                      Updated: {formatDate(product.updatedAt)}
-                                    </Typography>
-                                  </Box>
-                                )}
                             </Stack>
                           </CardContent>
                         </Card>
@@ -755,31 +714,28 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
         </section>
       )}
 
-      {/* ── Create Box Dialog ── */}
       <CreateBoxDialog
         open={openCreateBoxDialog}
-        spaceId={space?.id || ""}
+        spaceId={space?.dbId ?? space?.id ?? ""}
         spaceName={space?.alt || ""}
         onClose={() => setOpenCreateBoxDialog(false)}
         onSave={handleBoxCreated}
       />
 
-      {/* ── Product Registration Dialog ── */}
       <ProductRegistrationDialog
         open={openProductDialog}
-        spaceId={space?.id || ""}
+        spaceId={space?.dbId ?? space?.id ?? ""}
         spaceName={space?.alt || ""}
         defaultBox={selectedBox?.id ?? undefined}
         onClose={() => setOpenProductDialog(false)}
-        onSave={handleProductSave}
+        onSave={() => handleProductSave()}
       />
 
-      {/* ── Product Edit Dialog ── */}
       {openEditDialog && productToEdit && (
         <ProductEditDialog
           open={openEditDialog}
           product={productToEdit}
-          spaceId={space?.id || ""}
+          spaceId={space?.dbId ?? space?.id ?? ""}
           spaceName={space?.alt || ""}
           onClose={() => {
             setOpenEditDialog(false);
@@ -789,49 +745,57 @@ export const SpaceProductsModal: React.FC<SpaceProductsModalProps> = ({
         />
       )}
 
-      {/* ── Delete Confirmation ── */}
       <Dialog
         open={deleteDialogOpen}
         onClose={() => {
           setDeleteDialogOpen(false);
           setProductToDelete(null);
         }}
-        aria-labelledby="delete-dialog-title"
-        keepMounted={false}
+        PaperProps={{
+          sx: {
+            background: "linear-gradient(135deg, #3E2310 0%, #2C1A0E 100%)",
+            border: "1px solid rgba(255,165,0,0.2)",
+            borderRadius: "16px",
+          },
+        }}
       >
-        <DialogTitle id="delete-dialog-title">Confirm Delete</DialogTitle>
+        <DialogTitle sx={{ color: "#e74c3c", fontWeight: 700 }}>
+          🗑️ Confirm Delete
+        </DialogTitle>
         <DialogContent>
-          <Typography>
-            Are you sure you want to delete "{productToDelete?.name}"? This
-            action cannot be undone.
+          <Typography sx={{ color: "#F5F5DC" }}>
+            Are you sure you want to delete{" "}
+            <Box component="strong" sx={{ color: "#FFA500" }}>
+              "{productToDelete?.name}"
+            </Box>
+            ? This action cannot be undone.
           </Typography>
-          {productToDelete?.desc && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              {productToDelete.desc}
-            </Typography>
-          )}
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
           <Button
             onClick={() => {
               setDeleteDialogOpen(false);
               setProductToDelete(null);
             }}
+            sx={{ color: "#A07850", textTransform: "none" }}
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfirmDelete}
-            color="error"
             variant="contained"
-            autoFocus
+            sx={{
+              background: "linear-gradient(135deg, #c0392b 0%, #922b21 100%)",
+              borderRadius: "8px",
+              textTransform: "none",
+              fontWeight: 700,
+            }}
           >
             Delete
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* ── Snackbar ── */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

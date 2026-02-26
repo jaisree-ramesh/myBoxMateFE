@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid } from "@mui/material";
+import { Box } from "@mui/material";
 import { type IRoom, type IBox } from "../../types";
 import { SpacesCard } from "./SpacesCard";
 
@@ -9,7 +9,7 @@ interface SpacesGridProps {
   onSpaceClick: (spaceId: string) => void;
   onImageEdit: (space: IRoom) => void;
   onDelete: (space: IRoom) => void;
-  boxesBySpace: Record<string, IBox[]>;
+  boxesBySpace?: Record<string, IBox[]>;
 }
 
 export const SpacesGrid: React.FC<SpacesGridProps> = ({
@@ -21,36 +21,35 @@ export const SpacesGrid: React.FC<SpacesGridProps> = ({
   boxesBySpace = {},
 }) => {
   return (
-    <Grid
-      container
-      spacing="0.3rem"
+    <Box
       className="spaces-grid"
       sx={{
+        display: "grid",
+        gridTemplateColumns: {
+          xs: "1fr",
+          sm: "1fr 1fr",
+          lg: "1fr 1fr 1fr",
+        },
+        gap: "0.75rem",
         pb: 4,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        flexBasis: "auto",
-        margin: "1rem 0",
-        flexWrap: "wrap",
+        my: "1rem",
       }}
     >
       {spaces.map((space) => (
-        <Grid key={space.id}>
-          <SpacesCard
-            space={space}
-            isSelected={space.id === selectedSpaceId}
-            boxCount={
-              boxesBySpace[space.id]?.length ??
-              boxesBySpace[space.dbId ?? ""]?.length ??
-              0
-            }
-            onCardClick={onSpaceClick}
-            onImageEdit={onImageEdit}
-            onDelete={onDelete}
-          />
-        </Grid>
+        <SpacesCard
+          key={space.id}
+          space={space}
+          isSelected={space.id === selectedSpaceId}
+          boxCount={
+            boxesBySpace[space.id]?.length ??
+            boxesBySpace[space.dbId ?? ""]?.length ??
+            0
+          }
+          onCardClick={onSpaceClick}
+          onImageEdit={onImageEdit}
+          onDelete={onDelete}
+        />
       ))}
-    </Grid>
+    </Box>
   );
 };

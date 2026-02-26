@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { type IRoom, type IItem } from "../types";
+import { API_BASE, authHeaders } from "../config/api";
 
-const API_BASE = "http://localhost:3000";
-
-const normalize = (s: string) =>
-  s.trim().toLowerCase().replace(/\s+/g, "-");
+const normalize = (s: string) => s.trim().toLowerCase().replace(/\s+/g, "-");
 
 export const useSpaceOperations = (onSuccess?: () => void) => {
   const [loading, setLoading] = useState(false);
@@ -15,23 +13,21 @@ export const useSpaceOperations = (onSuccess?: () => void) => {
       setLoading(true);
       setError(null);
 
-      const newRoom: Omit<IRoom, "dbId"> = {
-        id: normalize(name),
-        alt: name.trim(),
-        image: "",
-      };
-
       const res = await fetch(`${API_BASE}/spaces`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newRoom),
+        headers: authHeaders(),
+        body: JSON.stringify({ alt: name.trim(), image: "" }),
       });
 
       if (!res.ok) throw new Error("Failed to create space");
 
-      const savedRoom = await res.json();
+      const saved = await res.json();
       onSuccess?.();
-      return { ...savedRoom, id: normalize(savedRoom.id), dbId: savedRoom.id };
+      return {
+        ...saved,
+        id: normalize(saved.id),
+        dbId: saved.id,
+      };
     } catch (err) {
       console.error("Error creating space:", err);
       setError("Failed to create space");
@@ -46,34 +42,12 @@ export const useSpaceOperations = (onSuccess?: () => void) => {
       setLoading(true);
       setError(null);
 
-      // Use dbId if available (original db id), otherwise fall back to id
       const targetId = space.dbId ?? space.id;
 
-      // 1. Delete all boxes belonging to this space
-      const boxesRes = await fetch(`${API_BASE}/boxes?parentId=${targetId}`);
-      if (boxesRes.ok) {
-        const boxes: { id: string }[] = await boxesRes.json();
-        await Promise.all(
-          boxes.map((box) =>
-            fetch(`${API_BASE}/boxes/${box.id}`, { method: "DELETE" })
-          )
-        );
-      }
-
-      // 2. Delete all items belonging to this space
-      const itemsRes = await fetch(`${API_BASE}/items?parentId=${targetId}`);
-      if (itemsRes.ok) {
-        const items: { id: string }[] = await itemsRes.json();
-        await Promise.all(
-          items.map((item) =>
-            fetch(`${API_BASE}/items/${item.id}`, { method: "DELETE" })
-          )
-        );
-      }
-
-      // 3. Delete the space itself
+      // Cascade delete is handled server-side
       const res = await fetch(`${API_BASE}/spaces/${targetId}`, {
         method: "DELETE",
+        headers: authHeaders(),
       });
 
       if (!res.ok) throw new Error("Failed to delete space");
@@ -91,12 +65,12 @@ export const useSpaceOperations = (onSuccess?: () => void) => {
 
   const updateSpaceImage = async (
     spaceId: string,
-    image: string
+    image: string,
   ): Promise<boolean> => {
     try {
       const res = await fetch(`${API_BASE}/spaces/${spaceId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify({ image }),
       });
 
@@ -112,7 +86,7 @@ export const useSpaceOperations = (onSuccess?: () => void) => {
   };
 
   const createProduct = async (
-    productData: Partial<IItem>
+    productData: Partial<IItem>,
   ): Promise<IItem | null> => {
     try {
       setLoading(true);
@@ -120,19 +94,15 @@ export const useSpaceOperations = (onSuccess?: () => void) => {
 
       const res = await fetch(`${API_BASE}/items`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...productData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }),
+        headers: authHeaders(),
+        body: JSON.stringify(productData),
       });
 
       if (!res.ok) throw new Error("Failed to create product");
 
-      const savedProduct = await res.json();
+      const saved = await res.json();
       onSuccess?.();
-      return savedProduct;
+      return { ...saved, _id: saved._id?.toString() };
     } catch (err) {
       console.error("Error creating product:", err);
       setError("Failed to create product");

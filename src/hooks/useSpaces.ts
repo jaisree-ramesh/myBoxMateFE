@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
-import { type IRoom, type IItem, type ICategoryIcon } from "../types";
-import { categoryIcons } from "../data";
+import { type IRoom, type IItem } from "../types";
 import { normalize } from "../utils/normalize";
+import { API_BASE, authHeaders } from "../config/api";
 
-const initialCategoryIcons: ICategoryIcon[] = categoryIcons;
-
-// Define the backend response types
 interface BackendProduct {
-  id: string;
+  _id: string;
   name: string;
   desc?: string;
   box?: string;
@@ -20,9 +17,11 @@ interface BackendProduct {
 }
 
 interface BackendSpace {
-  id: string;
-  image: string;
+  id: string;   // our routes return id (transformed from _id)
   alt: string;
+  image: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export const useSpaces = (refreshTrigger: number = 0) => {
@@ -31,65 +30,30 @@ export const useSpaces = (refreshTrigger: number = 0) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const initializeDefaultSpaces = async () => {
-    try {
-      const spacesRes = await fetch("http://localhost:3000/spaces");
-      const existingSpaces: BackendSpace[] = await spacesRes.json();
-
-      const existingIds = new Set(
-        existingSpaces.map((s: BackendSpace) => normalize(s.id))
-      );
-      const spacesToAdd = initialCategoryIcons.filter(
-        (icon) => !existingIds.has(normalize(icon.id))
-      );
-
-      if (spacesToAdd.length > 0) {
-        await Promise.all(
-          spacesToAdd.map((space) =>
-            fetch("http://localhost:3000/spaces", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                id: normalize(space.id),
-                image: space.image,
-                alt: space.alt,
-              }),
-            })
-          )
-        );
-      }
-    } catch (err) {
-      console.error("Error initializing default spaces:", err);
-      setError("Failed to initialize spaces");
-    }
-  };
-
-  // Function to transform backend product data to frontend format
-  const transformProductData = (productsData: BackendProduct[]): IItem[] => {
-    return productsData.map((product) => ({
-      ...product,
-      _id: product.id, // Map id to _id
+  const transformProductData = (productsData: BackendProduct[]): IItem[] =>
+    productsData.map((p) => ({
+      ...p,
+      // MongoDB returns _id as ObjectId string directly
+      _id: p._id?.toString(),
+      id: p._id?.toString(),
     }));
-  };
 
-  // Function to transform backend space data to frontend format
-  const transformSpaceData = (spacesData: BackendSpace[]): IRoom[] => {
-    return spacesData.map((space) => ({
+  const transformSpaceData = (spacesData: BackendSpace[]): IRoom[] =>
+    spacesData.map((space) => ({
       ...space,
       _id: space.id,
     }));
-  };
 
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      await initializeDefaultSpaces();
+      const headers = authHeaders();
 
       const [spacesRes, productsRes] = await Promise.all([
-        fetch("http://localhost:3000/spaces"),
-        fetch("http://localhost:3000/items"),
+        fetch(`${API_BASE}/spaces`, { headers }),
+        fetch(`${API_BASE}/items`, { headers }),
       ]);
 
       if (!spacesRes.ok || !productsRes.ok) {
@@ -99,38 +63,24 @@ export const useSpaces = (refreshTrigger: number = 0) => {
       const spacesData: BackendSpace[] = await spacesRes.json();
       const productsData: BackendProduct[] = await productsRes.json();
 
-      console.log("🔄 Raw products from API:", productsData);
-
-      // Transform the data
       const transformedProducts = transformProductData(productsData);
       const transformedSpaces = transformSpaceData(spacesData);
 
-      console.log("🔄 Transformed products:", transformedProducts);
-      console.log(
-        "📋 Products with _id:",
-        transformedProducts.filter((p) => p._id).length
-      );
-
-      // Normalize spaces
+      // Deduplicate spaces by normalized id (safety net)
       const usedIds = new Set<string>();
-      const normalizedSpaces = transformedSpaces.map((space) => {
-        const baseId = normalize(space.id);
-        let finalId = baseId;
-        let counter = 1;
-
-        while (usedIds.has(finalId)) {
-          finalId = `${baseId}-${counter}`;
-          counter++;
-        }
-        usedIds.add(finalId);
-
-        return {
+      const normalizedSpaces = transformedSpaces
+        .filter((space) => {
+          const nid = normalize(space.id);
+          if (usedIds.has(nid)) return false;
+          usedIds.add(nid);
+          return true;
+        })
+        .map((space) => ({
           ...space,
-          id: finalId,
+          id: normalize(space.id),
           dbId: space.id,
           alt: space.alt,
-        };
-      });
+        }));
 
       setProducts(transformedProducts);
       setSpaces(normalizedSpaces);
@@ -146,16 +96,7 @@ export const useSpaces = (refreshTrigger: number = 0) => {
     fetchData();
   }, [refreshTrigger]);
 
-  const refresh = () => {
-    console.log("🔄 Manual refresh triggered");
-    fetchData();
-  };
+  const refresh = () => fetchData();
 
-  return {
-    spaces,
-    products,
-    loading,
-    error,
-    refresh,
-  };
+  return { spaces, products, loading, error, refresh };
 };
