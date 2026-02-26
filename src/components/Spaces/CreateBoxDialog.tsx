@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -11,8 +11,8 @@ import {
   Tooltip,
 } from "@mui/material";
 import { type IBox } from "../../types";
+import { API_BASE, authHeaders } from "../../config/api";
 
-// ── Preset emojis the user can pick from ──
 const ICON_OPTIONS = [
   "📦",
   "🧣",
@@ -48,20 +48,19 @@ const ICON_OPTIONS = [
   "🍷",
 ];
 
-// ── Preset colors ──
 const COLOR_OPTIONS = [
-  "#D97706", // amber
-  "#DC2626", // red
-  "#7C3AED", // violet
-  "#2563EB", // blue
-  "#059669", // emerald
-  "#DB2777", // pink
-  "#0891B2", // cyan
-  "#65A30D", // lime
-  "#EA580C", // orange
-  "#4F46E5", // indigo
-  "#9333EA", // purple
-  "#0F766E", // teal
+  "#D97706",
+  "#DC2626",
+  "#7C3AED",
+  "#2563EB",
+  "#059669",
+  "#DB2777",
+  "#0891B2",
+  "#65A30D",
+  "#EA580C",
+  "#4F46E5",
+  "#9333EA",
+  "#0F766E",
 ];
 
 interface CreateBoxDialogProps {
@@ -105,31 +104,28 @@ export default function CreateBoxDialog({
     setError("");
 
     try {
-      const payload = {
-        name: name.trim(),
-        desc: desc.trim() || undefined,
-        icon: selectedIcon,
-        color: selectedColor,
-        parentId: spaceId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      const res = await fetch("http://localhost:3000/boxes", {
+      const res = await fetch(`${API_BASE}/boxes`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: authHeaders(),
+        body: JSON.stringify({
+          name: name.trim(),
+          desc: desc.trim() || undefined,
+          icon: selectedIcon,
+          color: selectedColor,
+          parentId: spaceId,
+        }),
       });
 
       if (!res.ok) throw new Error(`Failed to create box: ${res.status}`);
 
       const created = await res.json();
+      // MongoDB route returns { id, name, desc, icon, color, parentId, ... }
       const box: IBox = { ...created, _id: created.id };
 
       onSave(box);
       handleClose();
     } catch (err) {
-      console.error("❌ Error creating box:", err);
+      console.error("Error creating box:", err);
       setError("Failed to create box. Please try again.");
     } finally {
       setLoading(false);
@@ -175,7 +171,6 @@ export default function CreateBoxDialog({
       </DialogTitle>
 
       <DialogContent sx={{ pt: 3 }}>
-        {/* Name */}
         <TextField
           fullWidth
           label="Box Name *"
@@ -190,7 +185,6 @@ export default function CreateBoxDialog({
           autoFocus
         />
 
-        {/* Description */}
         <TextField
           fullWidth
           label="Description"
@@ -278,9 +272,7 @@ export default function CreateBoxDialog({
                         : "2px solid transparent",
                     outlineOffset: 2,
                     transition: "all 0.15s ease",
-                    "&:hover": {
-                      transform: "scale(1.2)",
-                    },
+                    "&:hover": { transform: "scale(1.2)" },
                   }}
                 />
               </Tooltip>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_BASE } from "../config/api";
 
 export interface CollabRequest {
   _id: string;
@@ -7,54 +8,66 @@ export interface CollabRequest {
   type: "incoming" | "outgoing";
 }
 
+interface RawCollabRequest {
+  _id: string;
+  status: "pending" | "accepted" | "rejected";
+  sender?: { _id: string; email: string };
+  receiver?: { _id: string; email: string };
+}
+
+interface StoredUser {
+  _id?: string;
+  username?: string;
+  email?: string;
+}
+
 export function useCollabNotifications() {
   const [requests, setRequests] = useState<CollabRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL;
   const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const user: StoredUser | null = JSON.parse(
+    localStorage.getItem("user") || "null",
+  );
 
-  useEffect(() => {
-    fetchRequests();
-    const interval = setInterval(fetchRequests, 10000); //  every 10s
-    return () => clearInterval(interval);
-  }, []);
-
-
-  // Fetch requests
   const fetchRequests = async () => {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/collaboration/my-requests`, {
+      const res = await fetch(`${API_BASE}/collaboration/my-requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const data = await res.json();
+      const data: RawCollabRequest[] = await res.json();
 
-      // Normalize backend data
-      const mapped = data.map((r: any) => ({
+      const mapped: CollabRequest[] = data.map((r) => ({
         _id: r._id,
-        email: r.sender?.email || r.receiver?.email || "unknown",
+        email: r.sender?.email ?? r.receiver?.email ?? "unknown",
         status: r.status,
         type: r.receiver?._id === user?._id ? "incoming" : "outgoing",
       }));
 
       setRequests(mapped);
-    } catch (err: any) {
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch requests";
       console.error("Error fetching requests:", err);
-      setError(err.message);
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
-  //  Accept / reject request
+  useEffect(() => {
+    fetchRequests();
+    const interval = setInterval(fetchRequests, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   const respondToRequest = async (id: string, action: "accept" | "reject") => {
     try {
-      await fetch(`${API_URL}/api/collaboration/${id}/respond`, {
+      await fetch(`${API_BASE}/collaboration/${id}/respond`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,10 +81,9 @@ export function useCollabNotifications() {
     }
   };
 
-  //  Delete notification (clear message)
   const deleteNotification = async (id: string) => {
     try {
-      await fetch(`${API_URL}/api/collaboration/notifications/delete`, {
+      await fetch(`${API_BASE}/collaboration/notifications/delete`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -84,10 +96,6 @@ export function useCollabNotifications() {
       console.error("Error deleting notification:", err);
     }
   };
-
-  useEffect(() => {
-    fetchRequests();
-  }, []);
 
   const hasNew = requests.some((r) => r.status === "pending");
 
